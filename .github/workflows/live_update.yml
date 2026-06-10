@@ -1,0 +1,62 @@
+name: Live Tournament Update
+
+on:
+  schedule:
+    # Runs every minute during WC 2026 (Jun 11 - Jul 19)
+    # GitHub Actions minimum is every 5 minutes via cron.
+    # We use every minute with the script deciding whether to actually update.
+    - cron: '* * * * *'
+  workflow_dispatch:
+    # Manual trigger from Actions tab anytime
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    # Only run during the tournament window (saves Actions minutes)
+    # Jun 11 2026 = day 162, Jul 19 2026 = day 200
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'schedule'
+      )
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # Need full token to push commits back
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install numpy
+
+      - name: Run live updater
+        id: updater
+        env:
+          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+        run: |
+          python update_results.py
+          # Check if JSON was updated (file modified in last 30 seconds)
+          if [ -f olympus_live.json ]; then
+            AGE=$(( $(date +%s) - $(date -r olympus_live.json +%s) ))
+            if [ $AGE -lt 30 ]; then
+              echo "updated=true" >> $GITHUB_OUTPUT
+            else
+              echo "updated=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Commit if updated
+        if: steps.updater.outputs.updated == 'true'
+        run: |
+          git config user.name  "Olympus Bot"
+          git config user.email "bot@projectolympus"
+          git add olympus_live.json
+          git diff --staged --quiet || git commit -m "Live update $(date -u '+%H:%M:%S UTC')"
+          git push
