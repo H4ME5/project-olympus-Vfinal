@@ -23,7 +23,7 @@ np.random.seed(int(datetime.now().timestamp()) % 999999)
  
 API_KEY  = os.environ.get('FOOTBALL_API_KEY', '')
 BASE_URL = 'https://api.football-data.org/v4'
-WC_ID    = 2000  # Verify on football-data.org once WC 2026 is in their system
+WC_ID    = 'WC'  # FIFA World Cup — football-data.org uses 'WC' as the competition code
  
 # ── API helper ────────────────────────────────────────────────────────
 def api_get(path):
