@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Project Olympus — WC 2026 Predictions</title>
+<style>
+:root{
+  --ink:#0d0d0d;--paper:#f7f5f0;--gold:#c9a84c;--gold-lt:#e8d49a;
+  --pitch:#1a2e1a;--pitch-lt:#243824;--grass:#2d5a27;
+  --red:#c0392b;--blue:#1a4a7a;--muted:#888;--border:#d4cfc4;
+  --card:#ffffff;--r:6px;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Georgia',serif;background:var(--paper);color:var(--ink);line-height:1.6}
+button{cursor:pointer;border:none;background:none;font:inherit}
+.container{max-width:1400px;margin:0 auto;padding:0 1.5rem}
+.mono{font-family:'Courier New',monospace}
+.label{font-family:'Courier New',monospace;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* HEADER */
+header{background:var(--pitch);color:#fff;padding:3rem 0 2rem;border-bottom:4px solid var(--gold);position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(255,255,255,.03) 28px,rgba(255,255,255,.03) 29px),repeating-linear-gradient(90deg,transparent,transparent 28px,rgba(255,255,255,.03) 28px,rgba(255,255,255,.03) 29px);pointer-events:none}
+.header-inner{display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;flex-wrap:wrap}
+.header-meta{text-align:right}
+.header-meta .label{color:var(--gold-lt)}
+.header-meta p{color:rgba(255,255,255,.7);font-size:.85rem;margin-top:.25rem}
+.gold-line{height:3px;background:linear-gradient(90deg,var(--gold),transparent);margin-top:1.5rem;border-radius:2px}
+
+/* NAV */
+nav{background:var(--pitch-lt);position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold)}
+.nav-inner{display:flex;overflow-x:auto}
+.nav-btn{padding:.85rem 1.4rem;color:rgba(255,255,255,.65);font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;font-family:'Courier New',monospace;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s}
+.nav-btn:hover{color:#fff;background:rgba(255,255,255,.05)}
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(201,168,76,.08)}
+
+/* SECTIONS */
+.section{display:none;padding:2.5rem 0 4rem}
+.section.active{display:block}
+.section-title{font-size:1.4rem;font-weight:700;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:.75rem}
+.section-title::before{content:'';display:inline-block;width:4px;height:1.4rem;background:var(--gold);border-radius:2px;flex-shrink:0}
+
+/* PODIUM */
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;max-width:800px}
+.podium-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);border-top:4px solid var(--border);padding:1.5rem 1rem;text-align:center;position:relative}
+.podium-card.p1{border-top-color:var(--gold);background:linear-gradient(160deg,#fffdf4,#fff)}
+.podium-card.p2{border-top-color:#b0b0b0}
+.podium-card.p3{border-top-color:#c08050}
+.podium-medal{font-size:1.5rem;margin-bottom:.3rem}
+.podium-flag{font-size:2.8rem;line-height:1;margin:.2rem 0}
+.podium-name{font-weight:700;font-size:1rem;margin:.3rem 0 .15rem}
+.podium-win{font-size:1.8rem;font-weight:700;color:var(--pitch);line-height:1}
+.podium-win span{font-size:.85rem;color:var(--muted);font-weight:400}
+
+/* RANKINGS TABLE */
+.rankings-table{width:100%;border-collapse:collapse;font-size:.88rem}
+.rankings-table th{background:var(--pitch);color:var(--gold);font-family:'Courier New',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.65rem .9rem;text-align:right;white-space:nowrap}
+.rankings-table th:first-child,.rankings-table th:nth-child(2),.rankings-table th:nth-child(3){text-align:left}
+.rankings-table td{padding:.6rem .9rem;border-bottom:1px solid var(--border);text-align:right;vertical-align:middle}
+.rankings-table td:first-child{text-align:center;color:var(--muted);font-size:.8rem;width:36px}
+.rankings-table td:nth-child(2){font-size:1.2rem;width:36px}
+.rankings-table td:nth-child(3){text-align:left;font-weight:600}
+.rankings-table tr:hover td{background:rgba(201,168,76,.06)}
+.rankings-table tr.top3 td{background:rgba(201,168,76,.04)}
+.bar-cell{width:120px}
+.prob-bar{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--grass));min-width:2px}
+.dhi-badge{display:inline-block;padding:.15rem .45rem;border-radius:3px;font-size:.72rem;font-weight:600;font-family:'Courier New',monospace}
+.dhi-high{background:#fff3cd;color:#856404}
+.dhi-med{background:#e8f4f8;color:#1a4a7a}
+.conf-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:.4rem}
+
+/* GROUPS */
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem}
+.group-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.group-header{background:var(--pitch);color:#fff;padding:.65rem 1rem;display:flex;justify-content:space-between;align-items:center}
+.group-header strong{font-size:1rem;letter-spacing:.05em}
+.group-header span{font-size:.72rem;color:var(--gold-lt);font-family:'Courier New',monospace}
+.group-team{display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;border-bottom:1px solid var(--border);transition:background .15s}
+.group-team:last-child{border-bottom:none}
+.group-team:hover{background:rgba(201,168,76,.05)}
+.group-pos{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0}
+.pos-1{background:var(--gold);color:#fff}
+.pos-2{background:#b0b0b0;color:#fff}
+.pos-3{background:var(--border);color:var(--muted)}
+.pos-4{background:#f0ece6;color:var(--muted)}
+.group-flag{font-size:1.5rem;line-height:1;flex-shrink:0}
+.group-name{flex:1;font-size:.9rem;font-weight:600}
+.group-pct{font-family:'Courier New',monospace;font-size:.78rem;color:var(--muted)}
+.group-score{font-family:'Courier New',monospace;font-size:.75rem;color:var(--pitch);background:var(--paper);padding:.1rem .35rem;border-radius:3px}
+.adv-arrow{color:var(--gold);font-size:.85rem}
+
+/* BRACKET */
+.bracket-note{background:rgba(201,168,76,.1);border:1px solid var(--gold-lt);border-radius:var(--r);padding:.75rem 1rem;margin-bottom:1.5rem;font-size:.85rem;color:var(--pitch)}
+.bracket-wrap{overflow-x:auto;padding-bottom:1rem}
+.bracket-match{background:var(--card);border-radius:4px;border:1px solid var(--border);margin:3px 4px;overflow:hidden;font-size:.78rem;box-shadow:0 1px 4px rgba(0,0,0,.06);transition:box-shadow .2s;min-width:150px}
+.bracket-match:hover{box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.b-team{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;border-bottom:1px solid var(--border)}
+.b-team:last-of-type{border-bottom:none}
+.b-team.won{background:rgba(201,168,76,.15);font-weight:700}
+.b-team.lost{opacity:.45}
+.b-flag{font-size:1rem;line-height:1;flex-shrink:0}
+.b-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.76rem}
+.b-score{font-family:'Courier New',monospace;font-size:.7rem;color:var(--muted);flex-shrink:0}
+.b-pct{text-align:center;padding:.18rem;font-family:'Courier New',monospace;font-size:.63rem;color:var(--muted);background:var(--paper);border-top:1px dashed var(--border)}
+.trophy-match{border:3px solid var(--gold)!important;box-shadow:0 4px 20px rgba(201,168,76,.3)!important}
+.bk-th{background:var(--pitch);color:var(--gold);font-family:'Courier New',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.5rem;text-align:center;border-radius:4px;white-space:nowrap}
+.trophy-header{text-align:center;padding:.3rem;background:var(--gold);color:var(--pitch);font-family:'Courier New',monospace;font-size:.62rem;letter-spacing:.08em;font-weight:700}
+
+/* MODEL SCORES */
+.scores-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.score-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:1.25rem;border-left:4px solid var(--border)}
+.score-card.elite{border-left-color:var(--gold)}
+.score-card.strong{border-left-color:var(--grass)}
+.score-card.mid{border-left-color:var(--blue)}
+.score-card.lower{border-left-color:var(--muted)}
+.score-team{display:flex;align-items:center;gap:.65rem;margin-bottom:.9rem}
+.score-flag{font-size:1.8rem;line-height:1}
+.score-name{font-weight:700;font-size:.95rem}
+.score-conf{font-size:.72rem;color:var(--muted)}
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-bottom:.9rem}
+.pillar{text-align:center;background:var(--paper);border-radius:4px;padding:.4rem .2rem}
+.pillar-val{font-size:.9rem;font-weight:700;font-family:'Courier New',monospace;color:var(--pitch)}
+.pillar-label{font-size:.6rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.score-total{text-align:center;padding:.5rem;background:var(--pitch);color:var(--gold);border-radius:4px;font-family:'Courier New',monospace;font-size:.82rem}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+@media(max-width:860px){.about-grid{grid-template-columns:1fr}}
+.about-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:2rem}
+.about-card h3{font-size:1.05rem;font-weight:700;margin-bottom:1rem;color:var(--pitch);padding-bottom:.6rem;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:.5rem}
+.var-block{margin-bottom:1.4rem}
+.var-name{font-family:'Courier New',monospace;font-size:.8rem;font-weight:700;color:var(--pitch);background:var(--paper);display:inline-block;padding:.2rem .5rem;border-radius:3px;border-left:3px solid var(--gold);margin-bottom:.4rem}
+.var-weight{float:right;font-size:.72rem;color:var(--muted);background:rgba(201,168,76,.15);padding:.15rem .4rem;border-radius:3px}
+.var-desc{font-size:.85rem;color:#333;line-height:1.65}
+.var-source{font-size:.74rem;color:var(--muted);margin-top:.3rem;font-style:italic}
+.glossary-term{display:grid;grid-template-columns:140px 1fr;gap:.75rem;padding:.75rem 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.glossary-term:last-child{border-bottom:none}
+.g-term{font-family:'Courier New',monospace;font-size:.8rem;font-weight:700;color:var(--pitch)}
+.g-def{color:#333;line-height:1.55}
+.model-flow{background:var(--paper);border-radius:var(--r);padding:1.25rem;margin:1rem 0;border:1px dashed var(--border)}
+.flow-step{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.9rem}
+.flow-step:last-child{margin-bottom:0}
+.flow-num{width:24px;height:24px;border-radius:50%;background:var(--pitch);color:var(--gold);font-size:.72rem;font-weight:700;font-family:'Courier New',monospace;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem}
+.flow-text{font-size:.84rem;line-height:1.6;color:#333}
+.flow-text strong{color:var(--pitch)}
+.limitations{background:#fff8f0;border:1px solid #f0c896;border-radius:var(--r);padding:1.25rem;margin-top:1rem}
+.limitations h4{font-size:.85rem;font-weight:700;margin-bottom:.6rem;color:#8b4513}
+.limitations li{font-size:.82rem;margin-left:1.2rem;margin-bottom:.35rem;color:#5c3317;line-height:1.55}
+.credit-bar{text-align:center;padding:1.5rem;background:var(--pitch);color:rgba(255,255,255,.5);font-size:.78rem;margin-top:2rem;border-radius:var(--r)}
+.credit-bar strong{color:var(--gold)}
+.mt2{margin-top:2rem}
+@media(max-width:700px){
+  .podium{grid-template-columns:1fr;max-width:280px}
+  .rankings-table .bar-cell,.rankings-table th:nth-child(n+7),.rankings-table td:nth-child(n+7){display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+<div class="container">
+  <div class="header-inner">
+    <div>
+      <div class="label" style="color:var(--gold-lt);margin-bottom:.5rem">⚽ Project Olympus</div>
+      <h1 style="font-size:clamp(2rem,5vw,3.8rem);font-weight:700;letter-spacing:-.03em;line-height:1.1;color:#fff">
+        World Cup<br><span style="color:var(--gold)">2026</span> Predictions
+      </h1>
+      <div style="height:3px;background:linear-gradient(90deg,var(--gold),transparent);margin-top:1.5rem;border-radius:2px;max-width:320px"></div>
+    </div>
+    <div class="header-meta">
+      <div class="label">Model Version</div>
+      <p>V2 Patched — Corrected June 2 Rosters</p>
+      <div class="label" style="margin-top:.75rem">Simulations Run</div>
+      <p>50,000 Monte Carlo iterations</p>
+      <div class="label" style="margin-top:.75rem">Generated</div>
+      <p id="gen-date">—</p>
+    </div>
+  </div>
+</div>
+</header>
+
+<nav>
+<div class="container">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="show('rankings',this)">🏅 Rankings</button>
+    <button class="nav-btn" onclick="show('groups',this)">🔵 Groups</button>
+    <button class="nav-btn" onclick="show('bracket',this)">🏆 Bracket</button>
+    <button class="nav-btn" onclick="show('scores',this)">📊 Model Scores</button>
+    <button class="nav-btn" onclick="show('about',this)">📖 About & Glossary</button>
+  </div>
+</div>
+</nav>
+
+<div id="sec-rankings" class="section active"><div class="container">
+  <div class="section-title">Tournament Winner Probabilities</div>
+  <div class="podium" id="podium"></div>
+  <div style="overflow-x:auto">
+  <table class="rankings-table">
+    <thead><tr>
+      <th>#</th><th></th><th>Team</th><th>Score</th><th>Win%</th>
+      <th class="bar-cell"></th><th>Final%</th><th>SF%</th>
+      <th>QF%</th><th>R16%</th><th>Adv%</th><th>DHI</th><th>Grp</th>
+    </tr></thead>
+    <tbody id="rankings-body"></tbody>
+  </table></div>
+</div></div>
+
+<div id="sec-groups" class="section"><div class="container">
+  <div class="section-title">Group Stage — Most Likely Standings</div>
+  <p class="label" style="margin-bottom:1.5rem">Most frequent finishing position across 50,000 simulations. % = probability of that position. → = advances.</p>
+  <div class="groups-grid" id="groups-grid"></div>
+</div></div>
+
+<div id="sec-bracket" class="section"><div class="container">
+  <div class="section-title">Most Likely Bracket Path</div>
+  <div class="bracket-note">
+    <strong>How to read this:</strong> Each match shows the two most likely teams to meet at that stage. The highlighted team is the most probable winner. Scores show simulated average goals. The % is how often that winner won that slot across 50,000 simulations — lower values reflect genuine uncertainty at a stage where many teams are capable of winning.
+  </div>
+  <div class="bracket-wrap" id="bracket-container"></div>
+</div></div>
+
+<div id="sec-scores" class="section"><div class="container">
+  <div class="section-title">Model Scores — All 48 Teams</div>
+  <p class="label" style="margin-bottom:1.5rem">P1=Macro 28% · P2=Player 34% · P3=Coach 13% · P4=Auxiliary 25% · plus 6 modifier variables</p>
+  <div class="scores-grid" id="scores-grid"></div>
+</div></div>
+
+<div id="sec-about" class="section"><div class="container">
+  <div class="section-title">About Project Olympus</div>
+  <div class="about-grid">
+    <div>
+      <div class="about-card">
+        <h3>⚙️ How the Model Works</h3>
+        <p style="font-size:.85rem;color:#333;margin-bottom:1rem;line-height:1.65">Project Olympus is a multi-pillar quantitative model that scores all 48 WC 2026 teams on four structural dimensions, applies six soft modifiers derived from squad-level data, then runs 50,000 Monte Carlo simulations of the full tournament using a Dixon-Coles Poisson match engine.</p>
+        <div class="model-flow">
+          <div class="flow-step"><div class="flow-num">1</div><div class="flow-text"><strong>Data collection:</strong> 1,248 players (26 per team) sourced from FBref, Transfermarkt, and official league data. All rosters verified against official June 2, 2026 FIFA-confirmed squads. 38 stat columns per player including xG, xA, pass%, duels%, defensive actions, GK save%, international caps.</div></div>
+          <div class="flow-step"><div class="flow-num">2</div><div class="flow-text"><strong>4-pillar scoring:</strong> Each team receives a composite score from four independently weighted pillars. Raw pillar scores are normalised across all 48 teams before weighting.</div></div>
+          <div class="flow-step"><div class="flow-num">3</div><div class="flow-text"><strong>6 modifier variables:</strong> Six additional squad-level variables nudge each team's score by a maximum of ±17 pts total, capped at +6/−8 so no team is over-rewarded or unfairly destroyed by a single factor.</div></div>
+          <div class="flow-step"><div class="flow-num">4</div><div class="flow-text"><strong>Monte Carlo simulation:</strong> 50,000 independent tournament runs. Each match uses a Dixon-Coles corrected Poisson model feeding P1/P2 scores into expected goals, with altitude and host crowd modifiers. Knockout rounds include extra time and penalty shootout simulation.</div></div>
+          <div class="flow-step"><div class="flow-num">5</div><div class="flow-text"><strong>Bracket extraction:</strong> After all simulations, each bracket slot records its most frequent winner — the team that appeared there most often across 50,000 runs — producing the most probable single-path bracket.</div></div>
+        </div>
+      </div>
+
+      <div class="about-card mt2">
+        <h3>🧱 The Four Pillars</h3>
+        <div class="var-block">
+          <div class="var-name">P1 — Macro Strength <span class="var-weight">28% weight</span></div>
+          <div class="var-desc">Structural team quality independent of individual players. Inputs: FIFA world ranking, ELO rating, total squad market value (Transfermarkt), historical World Cup performance index, and confederation quality multiplier. P1 answers: how strong is this team as an institution?</div>
+          <div class="var-source">Sources: FIFA.com, ClubElo.com, Transfermarkt.com, historical WC records</div>
+        </div>
+        <div class="var-block">
+          <div class="var-name">P2 — Player Quality <span class="var-weight">34% weight</span></div>
+          <div class="var-desc">Individual player performance aggregated to team level with two critical adjustments. (1) A league quality multiplier discounts stats from weaker leagues — Premier League = 1.00, Saudi PL = 0.68, Uzbek PL = 0.52. (2) Outfield players contribute via xG, xA, key passes, dribbles, and duel success; goalkeepers via save% and clean sheets. P2 has the highest model weight because player quality is the strongest predictor of WC performance.</div>
+          <div class="var-source">Sources: FBref 2025-26 season, Transfermarkt, official league databases</div>
+        </div>
+        <div class="var-block">
+          <div class="var-name">P3 — Coaching & Management <span class="var-weight">13% weight</span></div>
+          <div class="var-desc">Head coach quality score derived from: international win rate, tenure with the national team, total trophies won, World Cup experience as a manager, and an inexperience penalty for coaches with fewer than 2 years international experience (−15% discount). Coaches with very short tenure are penalised for squad cohesion risk.</div>
+          <div class="var-source">Sources: Soccerway international records, official federation sites</div>
+        </div>
+        <div class="var-block">
+          <div class="var-name">P4 — Auxiliary Factors <span class="var-weight">25% weight</span></div>
+          <div class="var-desc">Everything the other pillars don't capture: squad cohesion score (how many players play together at club level), defensive efficiency rating, tactical flexibility index (formations used in qualifiers), and international experience index (average caps per squad member). A high P4 team tends to be a unit greater than the sum of its parts.</div>
+          <div class="var-source">Sources: Squad club distribution analysis, qualification match data</div>
+        </div>
+      </div>
+
+      <div class="about-card mt2">
+        <h3>🌡️ Environmental Modifiers</h3>
+        <p style="font-size:.85rem;color:#333;margin-bottom:.75rem;line-height:1.65">Altitude and heat penalties/bonuses are applied at the match level. Each team has an altitude adaptation score (0–100) and heat adaptation score (0–100) derived from where their players train and their geographic origin. A match at 2,240m (Estadio Azteca) penalises teams with low altitude adaptation and rewards teams like Mexico, Colombia, and Ecuador who train at altitude.</p>
+        <p style="font-size:.85rem;color:#333;line-height:1.65"><strong>Host boost:</strong> USA, Mexico and Canada each receive a 1.04× attacking multiplier in group stage home fixtures — a conservative estimate of home advantage, corresponding to roughly +0.2 expected goals per match.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="about-card">
+        <h3>🔧 The Six Modifier Variables</h3>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:1rem">All modifiers normalised 0–100 across all 48 teams. Score of 50 = neutral. Each has a hard cap on maximum effect so no single variable dominates.</p>
+        <div class="var-block">
+          <div class="var-name">Age-Performance Curve <span class="var-weight">max ±4.0 pts</span></div>
+          <div class="var-desc">Squad age distribution weighted by player availability. Players peak 26–29; decay multipliers apply above 32 (moderate), 34 (significant), 36 (heavy). Physical stats decay faster than technical stats. Teams with prime-age squads score highest; squads with heavy 35+ representation are penalised but not destroyed — veteran players still contribute at a discounted rate.</div>
+        </div>
+        <div class="var-block">
+          <div class="var-name">Squad Depth Score <span class="var-weight">max ±3.0 pts</span></div>
+          <div class="var-desc">How evenly distributed quality is across all 26 players vs concentrated in a star-dependent top-7. Computed as the ratio of players 8–26 contribution to total squad contribution. Relevant in a 7-game tournament — fatigue and rotation matter. Spain scores highest (57.4); Panama and Haiti lowest.</div>
+        </div>
+        <div class="var-block">
+          <div class="var-name">6-Month Form Window <span class="var-weight">max ±4.0 pts</span></div>
+          <div class="var-desc">International results from January–June 2026, opponent-weighted. The 6-month window captures current momentum without distortion from results 2+ years ago. Spain (92), Germany (88), Portugal (85) and France (82) enter in excellent form; Brazil (60) and Argentina (72) had more inconsistent pre-tournament windows.</div>
+        </div>
+        <div class="var-block">
+          <div class="var-name">Squad Fragility <span class="var-weight">max ±2.5 pts</span></div>
+          <div class="var-desc">What percentage of the team's total xG+xA is concentrated in the top 3 players? Spain (96.8) has the most distributed attack — no single player dominates. Norway (72.4) is heavily Haaland-dependent. Mexico (64.2) was initially miscalculated as 0.0 due to sparse xG data; corrected after full roster verification with 26 official players.</div>
+        </div>
+        <div class="var-block">
+          <div class="var-name">Penalty Shootout Record <span class="var-weight">max ±2.0 pts</span></div>
+          <div class="var-desc">Historical WC penalty record converted to 0–100. Germany (95) is the best penalty team in history. England (52) historically poor. Applied structurally — influences probability of advancing in simulated penalty shootouts. At ±2pts max, it's a modest but real structural edge across many knockout rounds.</div>
+        </div>
+        <div class="var-block">
+          <div class="var-name">Group Stage Travel Burden <span class="var-weight">max ±1.5 pts</span></div>
+          <div class="var-desc">Total km travelled between group stage venues. England plays all 3 group games in Vancouver (0 km). Croatia, Ghana and Panama travel 6,713 km across Group L matches between Toronto and Vancouver — the heaviest burden in the tournament. Smallest modifier in the model; cumulative fatigue is real but recovery time (4-6 days) mitigates most of it.</div>
+        </div>
+      </div>
+
+      <div class="about-card mt2">
+        <h3>📖 Glossary of Terms</h3>
+        <div class="glossary-term"><span class="g-term">Final Score</span><span class="g-def">Composite model score after all 4 pillars and 6 modifiers. Higher = stronger team. A relative strength index, not a probability.</span></div>
+        <div class="glossary-term"><span class="g-term">Base Score</span><span class="g-def">The 4-pillar score before modifier variables are applied. Compare with Final Score to see what the modifiers changed.</span></div>
+        <div class="glossary-term"><span class="g-term">Modifier (Mod±)</span><span class="g-def">Net point change from all 6 modifier variables combined. Positive = boosted. Negative = penalised. Hard-capped at +6/−8.</span></div>
+        <div class="glossary-term"><span class="g-term">WIN %</span><span class="g-def">Percentage of 50,000 simulations where this team won the World Cup. The primary output metric of the model.</span></div>
+        <div class="glossary-term"><span class="g-term">ADV %</span><span class="g-def">Probability of advancing from the group stage — finishing 1st, 2nd, or as one of the 8 best 3rd-placed teams.</span></div>
+        <div class="glossary-term"><span class="g-term">DHI</span><span class="g-def">Dark Horse Index. Measures the gap between a team's simulated tournament performance and what their model score alone predicts. High DHI + lower score = genuine upset potential. Scotland (66.4), Austria (66.6), South Africa (67.9), Croatia (66.2) are the top dark horses.</span></div>
+        <div class="glossary-term"><span class="g-term">xG</span><span class="g-def">Expected Goals. Probability a shot results in a goal based on location, angle, and assist type. More predictive of future performance than actual goals scored.</span></div>
+        <div class="glossary-term"><span class="g-term">xA</span><span class="g-def">Expected Assists. The xG value of shots directly created by a player's pass or cross.</span></div>
+        <div class="glossary-term"><span class="g-term">Dixon-Coles</span><span class="g-def">Statistical correction to Poisson goal models, improving prediction of low-scoring outcomes (0-0, 1-0) which occur more often than a simple Poisson predicts. Applied in every match simulation.</span></div>
+        <div class="glossary-term"><span class="g-term">Monte Carlo</span><span class="g-def">Simulation technique running thousands of random trials to estimate probabilities. Each of 50,000 runs is a complete independent tournament re-simulated from scratch.</span></div>
+        <div class="glossary-term"><span class="g-term">League Quality Mult.</span><span class="g-def">Multiplier on player statistics to account for domestic league strength. PL = 1.00, Saudi PL = 0.68, Uzbek PL = 0.52. Prevents inflated stats from weaker leagues distorting team scores.</span></div>
+        <div class="glossary-term"><span class="g-term">ELO Rating</span><span class="g-def">Chess-derived rating applied to football. Teams gain/lose points based on results weighted by opponent strength. More responsive to recent results than FIFA rankings. Used as P1 input.</span></div>
+        <div class="glossary-term"><span class="g-term">Best Third</span><span class="g-def">In a 48-team, 12-group tournament, 8 of the 12 third-placed teams advance to the Round of 32, selected by points then goal difference then goals scored.</span></div>
+        <div class="glossary-term"><span class="g-term">Most Likely Bracket</span><span class="g-def">Not a prediction these exact matches will happen — the single most frequent path across 50,000 simulations. Low winner percentages (e.g. 22%) reflect genuine uncertainty, not model imprecision.</span></div>
+      </div>
+
+      <div class="about-card mt2">
+        <h3>⚠️ Model Limitations</h3>
+        <div class="limitations">
+          <h4>What this model cannot capture</h4>
+          <ul>
+            <li>In-tournament momentum and psychology — Argentina's 2022 comeback from a Saudi Arabia loss is not predictable by any model</li>
+            <li>Managerial in-game adaptation — Scaloni, Deschamps and others have genuine tactical intelligence the model only partially captures via P3</li>
+            <li>Injury luck — one key player lost before the QF fundamentally changes outcomes and no pre-tournament model accounts for this</li>
+            <li>Referee decisions, VAR calls, weather, or any stochastic event below the level of goals</li>
+            <li>Messi's historically elevated WC-specific performance vs club form — his Inter Miami xG is quality-discounted but his WC ceiling may be higher</li>
+            <li>Team chemistry that builds over the tournament — squads that grind through early rounds often overperform their pre-tournament score later</li>
+            <li>Estimated statistics for players from low-data leagues (Iraqi PL, Jordanian PL, Uzbek PL, PSL) — flagged as "est" and systematically discounted by league multiplier</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="credit-bar mt2">
+    <strong>Project Olympus</strong> · WC 2026 Prediction Model · V2 Patched · 50,000 simulations · June 2026<br>
+    Data: FBref · Transfermarkt · Soccerway · Official FIFA Squads (June 2, 2026) · Al Jazeera confirmed rosters
+  </div>
+</div></div>
+
+<script>
+const RAW={"meta":{"n_sims":50000,"version":"V2 Patched Final \u2014 corrected June 2 rosters + bracket","model":"P1=28% P2=34% P3=13% P4=25% + 6 modifiers","modifiers":{"age_curve":"max \u00b14.0pts","squad_depth":"max \u00b13.0pts","form_6m":"max \u00b14.0pts","fragility":"max \u00b12.5pts","penalty_rec":"max \u00b12.0pts","travel_burden":"max \u00b11.5pts"},"generated":"2026-06-10T01:37:18.323453"},"teams":{"ARG":{"name":"Argentina","group":"J","conf":"CONMEBOL","score":67.17,"base_score":68.06,"modifier":-0.89,"dhi":49.9,"P1":70.3,"P2":52.7,"P3":77.0,"P4":76.4,"advanced":98.7,"r16":75.5,"qf":49.6,"sf":35.0,"final":24.8,"winner":16.4,"group_pos":{"1":75.3,"2":19.9,"3":4.1,"4":0.7}},"ESP":{"name":"Spain","group":"H","conf":"UEFA","score":70.91,"base_score":64.91,"modifier":6.0,"dhi":49.6,"P1":63.1,"P2":52.3,"P3":61.6,"P4":94.1,"advanced":98.9,"r16":73.3,"qf":53.0,"sf":36.3,"final":22.5,"winner":12.5,"group_pos":{"1":61.4,"2":29.0,"3":9.3,"4":0.3}},"FRA":{"name":"France","group":"I","conf":"UEFA","score":69.61,"base_score":64.88,"modifier":4.73,"dhi":43.2,"P1":55.2,"P2":51.9,"P3":91.4,"P4":84.4,"advanced":97.2,"r16":57.6,"qf":36.5,"sf":18.0,"final":10.6,"winner":5.9,"group_pos":{"2":24.5,"1":65.0,"3":9.1,"4":1.4}},"POR":{"name":"Portugal","group":"K","conf":"UEFA","score":65.69,"base_score":60.78,"modifier":4.91,"dhi":44.2,"P1":58.4,"P2":58.8,"P3":62.7,"P4":69.2,"advanced":99.3,"r16":67.8,"qf":40.5,"sf":27.2,"final":17.8,"winner":11.2,"group_pos":{"1":77.0,"2":19.8,"3":2.8,"4":0.4}},"GER":{"name":"Germany","group":"E","conf":"UEFA","score":61.98,"base_score":56.58,"modifier":5.4,"dhi":44.1,"P1":60.9,"P2":49.4,"P3":56.6,"P4":62.8,"advanced":99.6,"r16":72.4,"qf":48.2,"sf":30.8,"final":19.0,"winner":10.1,"group_pos":{"1":74.0,"2":20.5,"3":5.5,"4":0.1}},"ENG":{"name":"England","group":"L","conf":"UEFA","score":57.07,"base_score":55.58,"modifier":1.49,"dhi":21.8,"P1":60.4,"P2":48.1,"P3":35.8,"P4":83.1,"advanced":95.7,"r16":59.5,"qf":38.5,"sf":25.6,"final":13.1,"winner":7.2,"group_pos":{"2":29.8,"1":58.4,"4":2.6,"3":9.3}},"NED":{"name":"Netherlands","group":"F","conf":"UEFA","score":52.39,"base_score":51.73,"modifier":0.66,"dhi":51.8,"P1":62.8,"P2":39.2,"P3":57.9,"P4":59.7,"advanced":97.6,"r16":57.2,"qf":34.3,"sf":18.8,"final":9.8,"winner":4.7,"group_pos":{"3":15.5,"1":53.6,"2":30.0,"4":0.8}},"BRA":{"name":"Brazil","group":"C","conf":"CONMEBOL","score":50.81,"base_score":51.82,"modifier":-1.01,"dhi":33.7,"P1":50.6,"P2":45.5,"P3":48.9,"P4":63.8,"advanced":96.6,"r16":53.0,"qf":28.0,"sf":14.4,"final":6.8,"winner":3.0,"group_pos":{"2":34.4,"1":38.5,"3":26.4,"4":0.7}},"JPN":{"name":"Japan","group":"F","conf":"AFC","score":54.98,"base_score":48.98,"modifier":6.0,"dhi":71.3,"P1":48.2,"P2":40.2,"P3":80.0,"P4":49.0,"advanced":92.0,"r16":43.4,"qf":19.7,"sf":8.7,"final":3.5,"winner":1.3,"group_pos":{"2":37.5,"1":28.9,"3":30.9,"4":2.7}},"NOR":{"name":"Norway","group":"I","conf":"UEFA","score":52.35,"base_score":48.66,"modifier":3.69,"dhi":59.8,"P1":46.8,"P2":38.2,"P3":75.6,"P4":55.4,"advanced":84.9,"r16":32.6,"qf":13.6,"sf":4.9,"final":1.8,"winner":0.6,"group_pos":{"1":23.4,"2":41.9,"3":27.4,"4":7.3}},"USA":{"name":"USA","group":"D","conf":"CONCACAF","score":51.59,"base_score":47.48,"modifier":4.11,"dhi":42.8,"P1":50.2,"P2":38.7,"P3":50.2,"P4":44.5,"advanced":86.4,"r16":51.9,"qf":26.5,"sf":11.4,"final":4.2,"winner":1.6,"group_pos":{"2":30.8,"1":42.1,"3":18.2,"4":9.0}},"AUT":{"name":"Austria","group":"J","conf":"UEFA","score":49.95,"base_score":47.48,"modifier":2.47,"dhi":66.6,"P1":55.6,"P2":34.1,"P3":71.7,"P4":43.4,"advanced":85.7,"r16":42.4,"qf":20.9,"sf":7.4,"final":3.2,"winner":1.4,"group_pos":{"3":20.6,"4":7.2,"2":52.3,"1":19.9}},"COL":{"name":"Colombia","group":"K","conf":"CONMEBOL","score":52.73,"base_score":47.93,"modifier":4.8,"dhi":54.9,"P1":54.2,"P2":29.8,"P3":47.7,"P4":56.6,"advanced":89.9,"r16":36.9,"qf":17.4,"sf":8.4,"final":2.7,"winner":1.0,"group_pos":{"3":16.4,"2":58.7,"1":20.5,"4":4.5}},"URU":{"name":"Uruguay","group":"H","conf":"CONMEBOL","score":47.19,"base_score":46.21,"modifier":0.98,"dhi":46.1,"P1":68.4,"P2":27.9,"P3":44.6,"P4":45.2,"advanced":94.8,"r16":58.7,"qf":35.5,"sf":17.8,"final":8.7,"winner":3.8,"group_pos":{"3":22.3,"2":45.8,"1":30.3,"4":1.6}},"TUR":{"name":"T\u00fcrkiye","group":"D","conf":"UEFA","score":49.31,"base_score":45.62,"modifier":3.69,"dhi":59.4,"P1":58.2,"P2":30.5,"P3":52.5,"P4":48.0,"advanced":85.2,"r16":51.1,"qf":26.7,"sf":11.8,"final":4.5,"winner":1.7,"group_pos":{"4":10.0,"2":32.1,"1":38.4,"3":19.5}},"CRO":{"name":"Croatia","group":"L","conf":"UEFA","score":49.61,"base_score":50.63,"modifier":-1.02,"dhi":66.2,"P1":50.4,"P2":45.3,"P3":74.3,"P4":49.5,"advanced":89.0,"r16":45.2,"qf":23.8,"sf":13.3,"final":5.6,"winner":2.6,"group_pos":{"1":33.6,"2":43.2,"3":17.0,"4":6.2}},"SUI":{"name":"Switzerland","group":"B","conf":"UEFA","score":51.75,"base_score":49.51,"modifier":2.24,"dhi":61.3,"P1":53.2,"P2":42.4,"P3":62.0,"P4":46.9,"advanced":83.6,"r16":51.1,"qf":25.6,"sf":11.4,"final":5.4,"winner":2.4,"group_pos":{"2":26.7,"1":42.9,"3":18.2,"4":12.1}},"SCO":{"name":"Scotland","group":"C","conf":"UEFA","score":41.2,"base_score":44.83,"modifier":-3.63,"dhi":66.4,"P1":50.8,"P2":47.0,"P3":62.3,"P4":30.1,"advanced":97.1,"r16":53.1,"qf":28.3,"sf":14.2,"final":6.5,"winner":2.7,"group_pos":{"1":40.6,"3":25.1,"2":33.7,"4":0.6}},"MEX":{"name":"Mexico","group":"A","conf":"CONCACAF","score":43.42,"base_score":44.94,"modifier":-1.52,"dhi":55.3,"P1":54.1,"P2":27.3,"P3":60.9,"P4":37.3,"advanced":84.0,"r16":40.6,"qf":16.0,"sf":5.6,"final":2.0,"winner":0.6,"group_pos":{"3":23.0,"2":36.4,"1":31.1,"4":9.6}},"BEL":{"name":"Belgium","group":"G","conf":"UEFA","score":40.17,"base_score":43.11,"modifier":-2.94,"dhi":35.1,"P1":48.6,"P2":40.6,"P3":41.3,"P4":46.5,"advanced":93.2,"r16":45.4,"qf":23.1,"sf":9.9,"final":4.1,"winner":1.5,"group_pos":{"4":3.3,"2":32.1,"1":44.9,"3":19.7}},"SEN":{"name":"Senegal","group":"I","conf":"CAF","score":42.52,"base_score":42.5,"modifier":0.02,"dhi":64.7,"P1":49.4,"P2":23.4,"P3":75.7,"P4":45.3,"advanced":67.5,"r16":21.0,"qf":6.9,"sf":2.0,"final":0.5,"winner":0.1,"group_pos":{"3":44.5,"2":28.3,"4":16.6,"1":10.7}},"MAR":{"name":"Morocco","group":"C","conf":"CAF","score":44.16,"base_score":40.38,"modifier":3.78,"dhi":39.0,"P1":47.8,"P2":36.8,"P3":24.7,"P4":43.5,"advanced":91.1,"r16":41.5,"qf":17.9,"sf":7.3,"final":2.5,"winner":0.8,"group_pos":{"3":45.6,"2":31.6,"1":20.9,"4":1.9}},"SWE":{"name":"Sweden","group":"F","conf":"UEFA","score":41.1,"base_score":39.5,"modifier":1.6,"dhi":59.5,"P1":47.2,"P2":32.8,"P3":52.1,"P4":36.9,"advanced":84.5,"r16":34.3,"qf":13.1,"sf":5.0,"final":1.5,"winner":0.5,"group_pos":{"1":17.3,"3":46.3,"4":5.0,"2":31.3}},"CAN":{"name":"Canada","group":"B","conf":"CONCACAF","score":41.08,"base_score":38.65,"modifier":2.43,"dhi":46.1,"P1":56.4,"P2":23.5,"P3":40.0,"P4":36.0,"advanced":64.2,"r16":30.5,"qf":11.3,"sf":4.0,"final":1.3,"winner":0.4,"group_pos":{"1":20.5,"4":27.2,"3":27.1,"2":25.1}},"EGY":{"name":"Egypt","group":"G","conf":"CAF","score":34.66,"base_score":36.35,"modifier":-1.69,"dhi":40.9,"P1":58.2,"P2":25.9,"P3":36.1,"P4":28.2,"advanced":90.5,"r16":41.5,"qf":18.9,"sf":7.5,"final":2.7,"winner":0.9,"group_pos":{"3":24.7,"2":35.3,"1":35.6,"4":4.5}},"GHA":{"name":"Ghana","group":"L","conf":"CAF","score":17.32,"base_score":23.41,"modifier":-6.09,"dhi":23.2,"P1":46.2,"P2":14.9,"P3":7.1,"P4":20.1,"advanced":30.7,"r16":7.8,"qf":2.0,"sf":0.4,"final":0.1,"winner":0.0,"group_pos":{"4":52.4,"3":33.4,"2":11.2,"1":3.1}},"CZE":{"name":"Czechia","group":"A","conf":"UEFA","score":30.28,"base_score":34.84,"modifier":-4.56,"dhi":35.3,"P1":71.4,"P2":25.1,"P3":18.1,"P4":28.4,"advanced":93.1,"r16":56.6,"qf":28.1,"sf":13.7,"final":6.8,"winner":3.0,"group_pos":{"2":29.1,"1":53.1,"3":13.6,"4":4.1}},"CIV":{"name":"Ivory Coast","group":"E","conf":"CAF","score":36.91,"base_score":35.72,"modifier":1.18,"dhi":41.0,"P1":45.6,"P2":34.8,"P3":33.9,"P4":29.3,"advanced":92.2,"r16":44.5,"qf":16.1,"sf":6.1,"final":1.9,"winner":0.6,"group_pos":{"3":29.1,"2":50.1,"1":18.9,"4":2.0}},"ECU":{"name":"Ecuador","group":"E","conf":"CONMEBOL","score":35.61,"base_score":35.23,"modifier":0.38,"dhi":45.9,"P1":52.4,"P2":12.9,"P3":24.9,"P4":46.1,"advanced":75.6,"r16":26.4,"qf":7.1,"sf":2.0,"final":0.4,"winner":0.1,"group_pos":{"2":28.7,"3":58.0,"4":6.1,"1":7.1}},"IRN":{"name":"Iran","group":"G","conf":"AFC","score":33.55,"base_score":35.02,"modifier":-1.47,"dhi":42.3,"P1":47.8,"P2":25.3,"P3":46.5,"P4":27.6,"advanced":78.2,"r16":28.7,"qf":9.8,"sf":3.0,"final":0.8,"winner":0.2,"group_pos":{"1":18.6,"2":29.2,"4":10.5,"3":41.7}},"KOR":{"name":"South Korea","group":"A","conf":"AFC","score":35.2,"base_score":33.62,"modifier":1.58,"dhi":44.2,"P1":38.4,"P2":33.1,"P3":46.4,"P4":32.2,"advanced":62.0,"r16":22.8,"qf":6.7,"sf":1.8,"final":0.4,"winner":0.1,"group_pos":{"1":12.6,"2":24.6,"3":38.4,"4":24.3}},"ALG":{"name":"Algeria","group":"J","conf":"CAF","score":30.82,"base_score":32.73,"modifier":-1.91,"dhi":45.2,"P1":46.4,"P2":19.0,"P3":49.8,"P4":27.4,"advanced":42.5,"r16":12.6,"qf":3.6,"sf":0.8,"final":0.2,"winner":0.0,"group_pos":{"4":35.6,"2":17.8,"3":43.2,"1":3.4}},"AUS":{"name":"Australia","group":"D","conf":"AFC","score":31.17,"base_score":32.62,"modifier":-1.45,"dhi":38.1,"P1":44.8,"P2":18.6,"P3":47.4,"P4":32.0,"advanced":39.2,"r16":13.7,"qf":3.9,"sf":0.9,"final":0.2,"winner":0.0,"group_pos":{"3":29.1,"4":49.0,"1":7.0,"2":15.0}},"PAR":{"name":"Paraguay","group":"D","conf":"CONMEBOL","score":30.3,"base_score":32.49,"modifier":-2.19,"dhi":45.1,"P1":50.8,"P2":19.6,"P3":43.8,"P4":24.3,"advanced":56.2,"r16":24.3,"qf":8.7,"sf":2.5,"final":0.5,"winner":0.1,"group_pos":{"1":12.6,"4":32.0,"2":22.1,"3":33.3}},"BIH":{"name":"Bosnia","group":"B","conf":"UEFA","score":30.25,"base_score":33.43,"modifier":-3.18,"dhi":38.9,"P1":52.4,"P2":26.6,"P3":33.8,"P4":24.2,"advanced":59.8,"r16":27.0,"qf":9.7,"sf":3.2,"final":1.0,"winner":0.3,"group_pos":{"4":31.1,"3":27.7,"1":17.5,"2":23.7}},"ZAF":{"name":"South Africa","group":"A","conf":"CAF","score":28.73,"base_score":28.9,"modifier":-0.17,"dhi":67.9,"P1":37.8,"P2":18.9,"P3":57.2,"P4":22.0,"advanced":26.7,"r16":6.2,"qf":1.1,"sf":0.2,"final":0.0,"winner":0.0,"group_pos":{"4":61.9,"2":9.9,"1":3.2,"3":25.0}},"PAN":{"name":"Panama","group":"L","conf":"CONCACAF","score":24.3,"base_score":30.95,"modifier":-6.65,"dhi":58.2,"P1":52.2,"P2":13.2,"P3":59.0,"P4":19.4,"advanced":42.2,"r16":11.7,"qf":3.1,"sf":0.8,"final":0.1,"winner":0.0,"group_pos":{"3":40.3,"4":38.9,"2":15.9,"1":4.9}},"COD":{"name":"DR Congo","group":"K","conf":"CAF","score":23.94,"base_score":27.44,"modifier":-3.5,"dhi":49.2,"P1":40.2,"P2":17.4,"P3":45.8,"P4":19.0,"advanced":38.2,"r16":8.1,"qf":1.7,"sf":0.3,"final":0.0,"winner":0.0,"group_pos":{"2":14.6,"3":48.7,"4":34.8,"1":1.9}},"UZB":{"name":"Uzbekistan","group":"K","conf":"AFC","score":22.77,"base_score":24.76,"modifier":-1.99,"dhi":50.9,"P1":41.4,"P2":7.6,"P3":49.6,"P4":17.5,"advanced":19.3,"r16":2.9,"qf":0.4,"sf":0.1,"final":0.0,"winner":0.0,"group_pos":{"4":60.3,"3":32.1,"2":6.9,"1":0.7}},"IRQ":{"name":"Iraq","group":"I","conf":"AFC","score":17.38,"base_score":22.49,"modifier":-5.11,"dhi":35.3,"P1":40.8,"P2":8.9,"P3":27.3,"P4":19.3,"advanced":14.4,"r16":2.1,"qf":0.3,"sf":0.1,"final":0.0,"winner":0.0,"group_pos":{"4":74.7,"3":19.0,"1":1.0,"2":5.3}},"JOR":{"name":"Jordan","group":"J","conf":"AFC","score":18.19,"base_score":22.48,"modifier":-4.29,"dhi":37.3,"P1":46.2,"P2":11.7,"P3":19.7,"P4":12.9,"advanced":25.1,"r16":5.7,"qf":1.2,"sf":0.2,"final":0.0,"winner":0.0,"group_pos":{"2":10.1,"3":32.0,"4":56.5,"1":1.4}},"QAT":{"name":"Qatar","group":"B","conf":"AFC","score":24.11,"base_score":28.38,"modifier":-4.27,"dhi":32.6,"P1":57.8,"P2":22.7,"P3":30.6,"P4":4.8,"advanced":62.2,"r16":28.7,"qf":10.4,"sf":3.6,"final":1.1,"winner":0.3,"group_pos":{"3":27.0,"1":19.1,"4":29.5,"2":24.4}},"KSA":{"name":"Saudi Arabia","group":"H","conf":"AFC","score":24.83,"base_score":27.62,"modifier":-2.79,"dhi":27.9,"P1":50.4,"P2":24.9,"P3":3.2,"P4":19.7,"advanced":73.5,"r16":30.3,"qf":12.0,"sf":3.9,"final":1.1,"winner":0.3,"group_pos":{"2":24.4,"3":59.7,"1":8.2,"4":7.7}},"CPV":{"name":"Cape Verde","group":"H","conf":"CAF","score":20.0,"base_score":22.76,"modifier":-2.76,"dhi":58.3,"P1":25.6,"P2":17.4,"P3":52.6,"P4":12.9,"advanced":3.4,"r16":0.4,"qf":0.0,"sf":0.0,"final":0.0,"winner":0.0,"group_pos":{"4":90.4,"3":8.7,"2":0.8,"1":0.1}},"TUN":{"name":"Tunisia","group":"F","conf":"CAF","score":16.32,"base_score":21.45,"modifier":-5.13,"dhi":41.5,"P1":26.2,"P2":16.0,"P3":34.0,"P4":18.3,"advanced":3.8,"r16":0.4,"qf":0.0,"sf":0.0,"final":0.0,"winner":0.0,"group_pos":{"4":91.5,"3":7.2,"2":1.1,"1":0.2}},"NZL":{"name":"New Zealand","group":"G","conf":"OFC","score":14.5,"base_score":19.92,"modifier":-5.42,"dhi":56.0,"P1":24.8,"P2":22.1,"P3":39.0,"P4":3.7,"advanced":10.9,"r16":1.5,"qf":0.1,"sf":0.0,"final":0.0,"winner":0.0,"group_pos":{"2":3.4,"4":81.8,"3":13.9,"1":0.9}},"CUW":{"name":"Cura\u00e7ao","group":"E","conf":"CONCACAF","score":12.72,"base_score":19.46,"modifier":-6.74,"dhi":55.5,"P1":22.2,"P2":13.9,"P3":60.3,"P4":4.0,"advanced":2.6,"r16":0.1,"qf":0.0,"sf":0.0,"final":0.0,"winner":0.0,"group_pos":{"4":91.7,"3":7.4,"2":0.8,"1":0.0}},"HAI":{"name":"Haiti","group":"C","conf":"CONCACAF","score":7.66,"base_score":15.66,"modifier":-8.0,"dhi":39.4,"P1":23.4,"P2":13.7,"P3":31.8,"P4":2.5,"advanced":1.2,"r16":0.1,"qf":0.0,"sf":0.0,"final":0.0,"winner":0.0,"group_pos":{"4":96.8,"3":2.9,"2":0.2,"1":0.0}}},"groups":{"A":[{"code":"MEX","name":"Mexico","score":43.42},{"code":"ZAF","name":"South Africa","score":28.73},{"code":"KOR","name":"South Korea","score":35.2},{"code":"CZE","name":"Czechia","score":30.28}],"B":[{"code":"CAN","name":"Canada","score":41.08},{"code":"BIH","name":"Bosnia","score":30.25},{"code":"QAT","name":"Qatar","score":24.11},{"code":"SUI","name":"Switzerland","score":51.75}],"C":[{"code":"BRA","name":"Brazil","score":50.81},{"code":"SCO","name":"Scotland","score":41.2},{"code":"HAI","name":"Haiti","score":7.66},{"code":"MAR","name":"Morocco","score":44.16}],"D":[{"code":"USA","name":"USA","score":51.59},{"code":"PAR","name":"Paraguay","score":30.3},{"code":"AUS","name":"Australia","score":31.17},{"code":"TUR","name":"T\u00fcrkiye","score":49.31}],"E":[{"code":"GER","name":"Germany","score":61.98},{"code":"CIV","name":"Ivory Coast","score":36.91},{"code":"ECU","name":"Ecuador","score":35.61},{"code":"CUW","name":"Cura\u00e7ao","score":12.72}],"F":[{"code":"NED","name":"Netherlands","score":52.39},{"code":"SWE","name":"Sweden","score":41.1},{"code":"JPN","name":"Japan","score":54.98},{"code":"TUN","name":"Tunisia","score":16.32}],"G":[{"code":"BEL","name":"Belgium","score":40.17},{"code":"NZL","name":"New Zealand","score":14.5},{"code":"EGY","name":"Egypt","score":34.66},{"code":"IRN","name":"Iran","score":33.55}],"H":[{"code":"ESP","name":"Spain","score":70.91},{"code":"URU","name":"Uruguay","score":47.19},{"code":"KSA","name":"Saudi Arabia","score":24.83},{"code":"CPV","name":"Cape Verde","score":20.0}],"I":[{"code":"FRA","name":"France","score":69.61},{"code":"SEN","name":"Senegal","score":42.52},{"code":"NOR","name":"Norway","score":52.35},{"code":"IRQ","name":"Iraq","score":17.38}],"J":[{"code":"ARG","name":"Argentina","score":67.17},{"code":"ALG","name":"Algeria","score":30.82},{"code":"AUT","name":"Austria","score":49.95},{"code":"JOR","name":"Jordan","score":18.19}],"K":[{"code":"POR","name":"Portugal","score":65.69},{"code":"COL","name":"Colombia","score":52.73},{"code":"COD","name":"DR Congo","score":23.94},{"code":"UZB","name":"Uzbekistan","score":22.77}],"L":[{"code":"ENG","name":"England","score":57.07},{"code":"GHA","name":"Ghana","score":17.32},{"code":"PAN","name":"Panama","score":24.3},{"code":"CRO","name":"Croatia","score":49.61}]},"ranked":[{"rank":1,"code":"ARG","win":16.4,"final":24.8,"sf":35.0,"qf":49.6,"r16":75.5,"adv":98.7},{"rank":2,"code":"ESP","win":12.5,"final":22.5,"sf":36.3,"qf":53.0,"r16":73.3,"adv":98.9},{"rank":3,"code":"POR","win":11.2,"final":17.8,"sf":27.2,"qf":40.5,"r16":67.8,"adv":99.3},{"rank":4,"code":"GER","win":10.1,"final":19.0,"sf":30.8,"qf":48.2,"r16":72.4,"adv":99.6},{"rank":5,"code":"ENG","win":7.2,"final":13.1,"sf":25.6,"qf":38.5,"r16":59.5,"adv":95.7},{"rank":6,"code":"FRA","win":5.9,"final":10.6,"sf":18.0,"qf":36.5,"r16":57.6,"adv":97.2},{"rank":7,"code":"NED","win":4.7,"final":9.8,"sf":18.8,"qf":34.3,"r16":57.2,"adv":97.6},{"rank":8,"code":"URU","win":3.8,"final":8.7,"sf":17.8,"qf":35.5,"r16":58.7,"adv":94.8},{"rank":9,"code":"BRA","win":3.0,"final":6.8,"sf":14.4,"qf":28.0,"r16":53.0,"adv":96.6},{"rank":10,"code":"CZE","win":3.0,"final":6.8,"sf":13.7,"qf":28.1,"r16":56.6,"adv":93.1},{"rank":11,"code":"SCO","win":2.7,"final":6.5,"sf":14.2,"qf":28.3,"r16":53.1,"adv":97.1},{"rank":12,"code":"CRO","win":2.6,"final":5.6,"sf":13.3,"qf":23.8,"r16":45.2,"adv":89.0},{"rank":13,"code":"SUI","win":2.4,"final":5.4,"sf":11.4,"qf":25.6,"r16":51.1,"adv":83.6},{"rank":14,"code":"TUR","win":1.7,"final":4.5,"sf":11.8,"qf":26.7,"r16":51.1,"adv":85.2},{"rank":15,"code":"USA","win":1.6,"final":4.2,"sf":11.4,"qf":26.5,"r16":51.9,"adv":86.4},{"rank":16,"code":"BEL","win":1.5,"final":4.1,"sf":9.9,"qf":23.1,"r16":45.4,"adv":93.2},{"rank":17,"code":"AUT","win":1.4,"final":3.2,"sf":7.4,"qf":20.9,"r16":42.4,"adv":85.7},{"rank":18,"code":"JPN","win":1.3,"final":3.5,"sf":8.7,"qf":19.7,"r16":43.4,"adv":92.0},{"rank":19,"code":"COL","win":1.0,"final":2.7,"sf":8.4,"qf":17.4,"r16":36.9,"adv":89.9},{"rank":20,"code":"EGY","win":0.9,"final":2.7,"sf":7.5,"qf":18.9,"r16":41.5,"adv":90.5},{"rank":21,"code":"MAR","win":0.8,"final":2.5,"sf":7.3,"qf":17.9,"r16":41.5,"adv":91.1},{"rank":22,"code":"NOR","win":0.6,"final":1.8,"sf":4.9,"qf":13.6,"r16":32.6,"adv":84.9},{"rank":23,"code":"MEX","win":0.6,"final":2.0,"sf":5.6,"qf":16.0,"r16":40.6,"adv":84.0},{"rank":24,"code":"CIV","win":0.6,"final":1.9,"sf":6.1,"qf":16.1,"r16":44.5,"adv":92.2},{"rank":25,"code":"SWE","win":0.5,"final":1.5,"sf":5.0,"qf":13.1,"r16":34.3,"adv":84.5},{"rank":26,"code":"CAN","win":0.4,"final":1.3,"sf":4.0,"qf":11.3,"r16":30.5,"adv":64.2},{"rank":27,"code":"BIH","win":0.3,"final":1.0,"sf":3.2,"qf":9.7,"r16":27.0,"adv":59.8},{"rank":28,"code":"QAT","win":0.3,"final":1.1,"sf":3.6,"qf":10.4,"r16":28.7,"adv":62.2},{"rank":29,"code":"KSA","win":0.3,"final":1.1,"sf":3.9,"qf":12.0,"r16":30.3,"adv":73.5},{"rank":30,"code":"IRN","win":0.2,"final":0.8,"sf":3.0,"qf":9.8,"r16":28.7,"adv":78.2},{"rank":31,"code":"SEN","win":0.1,"final":0.5,"sf":2.0,"qf":6.9,"r16":21.0,"adv":67.5},{"rank":32,"code":"ECU","win":0.1,"final":0.4,"sf":2.0,"qf":7.1,"r16":26.4,"adv":75.6},{"rank":33,"code":"KOR","win":0.1,"final":0.4,"sf":1.8,"qf":6.7,"r16":22.8,"adv":62.0},{"rank":34,"code":"PAR","win":0.1,"final":0.5,"sf":2.5,"qf":8.7,"r16":24.3,"adv":56.2},{"rank":35,"code":"GHA","win":0.0,"final":0.1,"sf":0.4,"qf":2.0,"r16":7.8,"adv":30.7},{"rank":36,"code":"ALG","win":0.0,"final":0.2,"sf":0.8,"qf":3.6,"r16":12.6,"adv":42.5},{"rank":37,"code":"AUS","win":0.0,"final":0.2,"sf":0.9,"qf":3.9,"r16":13.7,"adv":39.2},{"rank":38,"code":"ZAF","win":0.0,"final":0.0,"sf":0.2,"qf":1.1,"r16":6.2,"adv":26.7},{"rank":39,"code":"PAN","win":0.0,"final":0.1,"sf":0.8,"qf":3.1,"r16":11.7,"adv":42.2},{"rank":40,"code":"COD","win":0.0,"final":0.0,"sf":0.3,"qf":1.7,"r16":8.1,"adv":38.2},{"rank":41,"code":"UZB","win":0.0,"final":0.0,"sf":0.1,"qf":0.4,"r16":2.9,"adv":19.3},{"rank":42,"code":"IRQ","win":0.0,"final":0.0,"sf":0.1,"qf":0.3,"r16":2.1,"adv":14.4},{"rank":43,"code":"JOR","win":0.0,"final":0.0,"sf":0.2,"qf":1.2,"r16":5.7,"adv":25.1},{"rank":44,"code":"CPV","win":0.0,"final":0.0,"sf":0.0,"qf":0.0,"r16":0.4,"adv":3.4},{"rank":45,"code":"TUN","win":0.0,"final":0.0,"sf":0.0,"qf":0.0,"r16":0.4,"adv":3.8},{"rank":46,"code":"NZL","win":0.0,"final":0.0,"sf":0.0,"qf":0.1,"r16":1.5,"adv":10.9},{"rank":47,"code":"CUW","win":0.0,"final":0.0,"sf":0.0,"qf":0.0,"r16":0.1,"adv":2.6},{"rank":48,"code":"HAI","win":0.0,"final":0.0,"sf":0.0,"qf":0.0,"r16":0.1,"adv":1.2}],"bracket":{"groups":{"A":[{"code":"CZE","pos":1,"pct":53.1,"score":30.28},{"code":"MEX","pos":2,"pct":36.4,"score":43.42},{"code":"KOR","pos":3,"pct":38.4,"score":35.2},{"code":"CZE","pos":4,"pct":0,"score":30.28}],"B":[{"code":"SUI","pos":1,"pct":42.9,"score":51.75},{"code":"SUI","pos":2,"pct":26.7,"score":51.75},{"code":"BIH","pos":3,"pct":27.7,"score":30.25},{"code":"SUI","pos":4,"pct":0,"score":51.75}],"C":[{"code":"SCO","pos":1,"pct":40.6,"score":41.2},{"code":"BRA","pos":2,"pct":34.4,"score":50.81},{"code":"MAR","pos":3,"pct":45.6,"score":44.16},{"code":"MAR","pos":4,"pct":0,"score":44.16}],"D":[{"code":"USA","pos":1,"pct":42.1,"score":51.59},{"code":"TUR","pos":2,"pct":32.1,"score":49.31},{"code":"PAR","pos":3,"pct":33.3,"score":30.3},{"code":"TUR","pos":4,"pct":0,"score":49.31}],"E":[{"code":"GER","pos":1,"pct":74.0,"score":61.98},{"code":"CIV","pos":2,"pct":50.1,"score":36.91},{"code":"ECU","pos":3,"pct":58.0,"score":35.61},{"code":"CUW","pos":4,"pct":0,"score":12.72}],"F":[{"code":"NED","pos":1,"pct":53.6,"score":52.39},{"code":"JPN","pos":2,"pct":37.5,"score":54.98},{"code":"SWE","pos":3,"pct":46.3,"score":41.1},{"code":"TUN","pos":4,"pct":0,"score":16.32}],"G":[{"code":"BEL","pos":1,"pct":44.9,"score":40.17},{"code":"EGY","pos":2,"pct":35.3,"score":34.66},{"code":"IRN","pos":3,"pct":41.7,"score":33.55},{"code":"IRN","pos":4,"pct":0,"score":33.55}],"H":[{"code":"ESP","pos":1,"pct":61.4,"score":70.91},{"code":"URU","pos":2,"pct":45.8,"score":47.19},{"code":"KSA","pos":3,"pct":59.7,"score":24.83},{"code":"CPV","pos":4,"pct":0,"score":20.0}],"I":[{"code":"FRA","pos":1,"pct":65.0,"score":69.61},{"code":"NOR","pos":2,"pct":41.9,"score":52.35},{"code":"SEN","pos":3,"pct":44.5,"score":42.52},{"code":"IRQ","pos":4,"pct":0,"score":17.38}],"J":[{"code":"ARG","pos":1,"pct":75.3,"score":67.17},{"code":"AUT","pos":2,"pct":52.3,"score":49.95},{"code":"ALG","pos":3,"pct":43.2,"score":30.82},{"code":"JOR","pos":4,"pct":0,"score":18.19}],"K":[{"code":"POR","pos":1,"pct":77.0,"score":65.69},{"code":"COL","pos":2,"pct":58.7,"score":52.73},{"code":"COD","pos":3,"pct":48.7,"score":23.94},{"code":"UZB","pos":4,"pct":0,"score":22.77}],"L":[{"code":"ENG","pos":1,"pct":58.4,"score":57.07},{"code":"CRO","pos":2,"pct":43.2,"score":49.61},{"code":"PAN","pos":3,"pct":40.3,"score":24.3},{"code":"CRO","pos":4,"pct":0,"score":49.61}]},"thirds":{"B1":{"code":"MAR","pct":8.9,"score":44.16},"B2":{"code":"MAR","pct":6.2,"score":44.16},"B3":{"code":"KSA","pct":4.8,"score":24.83},"B4":{"code":"KSA","pct":4.9,"score":24.83},"B5":{"code":"KSA","pct":5.1,"score":24.83},"B6":{"code":"KSA","pct":5.2,"score":24.83},"B7":{"code":"KSA","pct":5.3,"score":24.83},"B8":{"code":"KSA","pct":5.2,"score":24.83}},"r32":[{"slot":"R32_1","home":"CZE","away":"SUI","winner":"CZE","winner_pct":32.9,"avg_goals":{"h":1.5,"a":1.4},"home_slot":"1A","away_slot":"2B"},{"slot":"R32_2","home":"GER","away":"KSA","winner":"GER","winner_pct":46.4,"avg_goals":{"h":0.9,"a":0.4},"home_slot":"1E","away_slot":"B1"},{"slot":"R32_3","home":"NED","away":"BRA","winner":"NED","winner_pct":31.5,"avg_goals":{"h":1.6,"a":1.4},"home_slot":"1F","away_slot":"2C"},{"slot":"R32_4","home":"SCO","away":"JPN","winner":"SCO","winner_pct":22.8,"avg_goals":{"h":1.7,"a":1.4},"home_slot":"1C","away_slot":"2F"},{"slot":"R32_5","home":"ESP","away":"ECU","winner":"ESP","winner_pct":43.3,"avg_goals":{"h":1.1,"a":0.5},"home_slot":"1H","away_slot":"B2"},{"slot":"R32_6","home":"CIV","away":"MAR","winner":"MAR","winner_pct":29.6,"avg_goals":{"h":0.6,"a":0.7},"home_slot":"2E","away_slot":"B3"},{"slot":"R32_7","home":"BEL","away":"URU","winner":"URU","winner_pct":28.2,"avg_goals":{"h":1.3,"a":1.6},"home_slot":"1G","away_slot":"2H"},{"slot":"R32_8","home":"USA","away":"EGY","winner":"USA","winner_pct":24.6,"avg_goals":{"h":1.6,"a":1.4},"home_slot":"1D","away_slot":"2G"},{"slot":"R32_9","home":"SUI","away":"MEX","winner":"SUI","winner_pct":27.2,"avg_goals":{"h":1.7,"a":1.3},"home_slot":"1B","away_slot":"2A"},{"slot":"R32_10","home":"FRA","away":"AUT","winner":"FRA","winner_pct":41.6,"avg_goals":{"h":1.8,"a":1.3},"home_slot":"1I","away_slot":"2J"},{"slot":"R32_11","home":"POR","away":"CRO","winner":"POR","winner_pct":53.8,"avg_goals":{"h":1.9,"a":1.2},"home_slot":"1K","away_slot":"2L"},{"slot":"R32_12","home":"ARG","away":"NOR","winner":"ARG","winner_pct":58.9,"avg_goals":{"h":2.2,"a":0.9},"home_slot":"1J","away_slot":"2I"},{"slot":"R32_13","home":"ENG","away":"COL","winner":"ENG","winner_pct":39.9,"avg_goals":{"h":1.9,"a":1.1},"home_slot":"1L","away_slot":"2K"},{"slot":"R32_14","home":"SWE","away":"IRN","winner":"SWE","winner_pct":35.8,"avg_goals":{"h":0.6,"a":0.5},"home_slot":"B4","away_slot":"B5"},{"slot":"R32_15","home":"SEN","away":"KOR","winner":"SEN","winner_pct":35.6,"avg_goals":{"h":0.6,"a":0.5},"home_slot":"B6","away_slot":"B7"},{"slot":"R32_16","home":"COD","away":"TUR","winner":"TUR","winner_pct":21.2,"avg_goals":{"h":0.4,"a":0.7},"home_slot":"B8","away_slot":"2D"}],"r16":[{"slot":"R16_1","home":"CZE","away":"GER","winner":"GER","winner_pct":37.5,"avg_goals":{"h":1.2,"a":1.6}},{"slot":"R16_2","home":"NED","away":"SCO","winner":"NED","winner_pct":29.3,"avg_goals":{"h":1.6,"a":1.4}},{"slot":"R16_3","home":"ESP","away":"MAR","winner":"ESP","winner_pct":40.1,"avg_goals":{"h":1.1,"a":0.7}},{"slot":"R16_4","home":"URU","away":"USA","winner":"BEL","winner_pct":18.9,"avg_goals":{"h":1.6,"a":1.3}},{"slot":"R16_5","home":"SUI","away":"FRA","winner":"FRA","winner_pct":27.8,"avg_goals":{"h":1.3,"a":1.7}},{"slot":"R16_6","home":"POR","away":"ARG","winner":"ARG","winner_pct":36.9,"avg_goals":{"h":1.4,"a":1.6}},{"slot":"R16_7","home":"ENG","away":"SWE","winner":"ENG","winner_pct":37.8,"avg_goals":{"h":0.9,"a":0.6}},{"slot":"R16_8","home":"SEN","away":"TUR","winner":"TUR","winner_pct":30.1,"avg_goals":{"h":0.6,"a":0.7}}],"qf":[{"slot":"QF_1","home":"GER","away":"NED","winner":"GER","winner_pct":23.7,"avg_goals":{"h":1.6,"a":1.3}},{"slot":"QF_2","home":"ESP","away":"BEL","winner":"ESP","winner_pct":34.5,"avg_goals":{"h":2.0,"a":1.2}},{"slot":"QF_3","home":"FRA","away":"ARG","winner":"ARG","winner_pct":33.6,"avg_goals":{"h":1.3,"a":1.8}},{"slot":"QF_4","home":"ENG","away":"TUR","winner":"ENG","winner_pct":20.8,"avg_goals":{"h":1.8,"a":1.2}}],"sf":[{"slot":"SF_1","home":"GER","away":"ESP","winner":"ESP","winner_pct":21.9,"avg_goals":{"h":1.5,"a":1.6}},{"slot":"SF_2","home":"ARG","away":"ENG","winner":"ARG","winner_pct":24.4,"avg_goals":{"h":1.8,"a":1.3}}],"final":{"home":"ESP","away":"ARG","winner_pct":16.4,"avg_goals":{"h":1.4,"a":1.6}},"winner":"ARG"}};
+const FLAGS={"ARG": "🇦🇷", "ESP": "🇪🇸", "POR": "🇵🇹", "GER": "🇩🇪", "ENG": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "FRA": "🇫🇷", "NED": "🇳🇱", "BRA": "🇧🇷", "JPN": "🇯🇵", "NOR": "🇳🇴", "USA": "🇺🇸", "AUT": "🇦🇹", "COL": "🇨🇴", "URU": "🇺🇾", "TUR": "🇹🇷", "CRO": "🇭🇷", "SUI": "🇨🇭", "SCO": "🏴󠁧󠁢󠁳󠁣󠁴󠁿", "MEX": "🇲🇽", "BEL": "🇧🇪", "SEN": "🇸🇳", "MAR": "🇲🇦", "SWE": "🇸🇪", "CAN": "🇨🇦", "EGY": "🇪🇬", "GHA": "🇬🇭", "CZE": "🇨🇿", "CIV": "🇨🇮", "ECU": "🇪🇨", "IRN": "🇮🇷", "KOR": "🇰🇷", "ALG": "🇩🇿", "AUS": "🇦🇺", "PAR": "🇵🇾", "BIH": "🇧🇦", "ZAF": "🇿🇦", "PAN": "🇵🇦", "COD": "🇨🇩", "UZB": "🇺🇿", "IRQ": "🇮🇶", "JOR": "🇯🇴", "QAT": "🇶🇦", "KSA": "🇸🇦", "CPV": "🇨🇻", "TUN": "🇹🇳", "NZL": "🇳🇿", "CUW": "🇨🇼", "HAI": "🇭🇹"};
+const CONF_COLORS={UEFA:'#003399',CONMEBOL:'#009900',CAF:'#cc6600',AFC:'#cc0000',CONCACAF:'#006699',OFC:'#660099'};
+
+function flag(c){return FLAGS[c]||'🏳';}
+function tname(c){return RAW.teams[c]?.name||c;}
+
+function show(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Date
+const dt=new Date(RAW.meta.generated);
+document.getElementById('gen-date').textContent=dt.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+// PODIUM
+(function(){
+  const top3=RAW.ranked.slice(0,3);
+  const medals=['🥇','🥈','🥉'],cls=['p1','p2','p3'];
+  document.getElementById('podium').innerHTML=top3.map((r,i)=>{
+    const t=RAW.teams[r.code];
+    return `<div class="podium-card ${cls[i]}"><div class="podium-medal">${medals[i]}</div><div class="podium-flag">${flag(r.code)}</div><div class="podium-name">${t.name}</div><div class="podium-win">${r.win}<span>%</span></div><div class="label" style="margin-top:.3rem">to win</div></div>`;
+  }).join('');
+})();
+
+// RANKINGS
+(function(){
+  const maxW=RAW.ranked[0].win;
+  document.getElementById('rankings-body').innerHTML=RAW.ranked.map((r,i)=>{
+    const t=RAW.teams[r.code];
+    const bw=Math.round(r.win/maxW*100);
+    const dc=t.dhi>60?'dhi-high':'dhi-med';
+    const cc=CONF_COLORS[t.conf]||'#888';
+    return `<tr class="${i<3?'top3':''}">
+      <td>${r.rank}</td><td style="font-size:1.3rem">${flag(r.code)}</td>
+      <td><span class="conf-dot" style="background:${cc}"></span><strong>${t.name}</strong> <span class="label">${r.code}</span></td>
+      <td class="mono">${t.score.toFixed(1)}</td>
+      <td class="mono" style="color:var(--pitch);font-weight:700">${r.win}%</td>
+      <td class="bar-cell"><div class="prob-bar" style="width:${bw}%"></div></td>
+      <td class="mono">${r.final}%</td><td class="mono">${r.sf}%</td>
+      <td class="mono">${r.qf}%</td><td class="mono">${r.r16}%</td>
+      <td class="mono">${r.adv}%</td>
+      <td><span class="dhi-badge ${dc}">${t.dhi.toFixed(0)}</span></td>
+      <td class="mono" style="color:var(--muted)">${t.group}</td>
+    </tr>`;
+  }).join('');
+})();
+
+// GROUPS
+(function(){
+  const grps=['A','B','C','D','E','F','G','H','I','J','K','L'];
+  document.getElementById('groups-grid').innerHTML=grps.map(g=>{
+    const teams=RAW.bracket.groups[g];
+    const rows=teams.map((e,i)=>{
+      const t=RAW.teams[e.code];
+      const adv=i<2;
+      return `<div class="group-team">
+        <div class="group-pos pos-${i+1}">${i+1}</div>
+        <div class="group-flag">${flag(e.code)}</div>
+        <div class="group-name">${t.name}</div>
+        ${adv?'<span class="adv-arrow">→</span>':''}
+        <div class="group-score">${t.score.toFixed(1)}</div>
+        <div class="group-pct">${e.pct}%</div>
+      </div>`;
+    }).join('');
+    return `<div class="group-card"><div class="group-header"><strong>Group ${g}</strong><span>top-2 + best 3rd</span></div>${rows}</div>`;
+  }).join('');
+})();
+
+// BRACKET
+(function(){
+  const b=RAW.bracket;
+
+  function matchCard(h,a,w,pct,goals,extra=''){
+    if(!h||!a) return `<div class="bracket-match" style="opacity:.25;${extra}"><div class="b-team"><span class="b-flag">—</span><span class="b-name">TBD</span></div><div class="b-team"><span class="b-flag">—</span><span class="b-name">TBD</span></div></div>`;
+    const hW=w===h,aW=w===a;
+    return `<div class="bracket-match${extra?' '+extra:''}">
+      <div class="b-team${hW?' won':aW?' lost':''}"><span class="b-flag">${flag(h)}</span><span class="b-name">${tname(h)}</span>${goals?`<span class="b-score">${goals.h}</span>`:''} </div>
+      <div class="b-team${aW?' won':hW?' lost':''}"><span class="b-flag">${flag(a)}</span><span class="b-name">${tname(a)}</span>${goals?`<span class="b-score">${goals.a}</span>`:''} </div>
+      <div class="b-pct">${w?tname(w)+' '+pct+'%':'—'}</div>
+    </div>`;
+  }
+
+  function cell(m,rs=1){
+    const mc=matchCard(m.home,m.away,m.winner,m.winner_pct,m.avg_goals);
+    return `<td rowspan="${rs}" style="vertical-align:middle;padding:2px">${mc}</td>`;
+  }
+
+  const thStyle='class="bk-th"';
+
+  // Final card
+  const fin=b.final||{};
+  const fw=b.winner;
+  const finCard=`<div class="bracket-match trophy-match">
+    <div class="trophy-header">🏆 WORLD CUP FINAL</div>
+    <div class="b-team${fw===fin.home?' won':fw===fin.away?' lost':''}"><span class="b-flag">${flag(fin.home)}</span><span class="b-name">${tname(fin.home)}</span>${fin.avg_goals?`<span class="b-score">${fin.avg_goals.h}</span>`:''} </div>
+    <div class="b-team${fw===fin.away?' won':fw===fin.home?' lost':''}"><span class="b-flag">${flag(fin.away)}</span><span class="b-name">${tname(fin.away)}</span>${fin.avg_goals?`<span class="b-score">${fin.avg_goals.a}</span>`:''} </div>
+    <div class="b-pct" style="background:var(--pitch);color:var(--gold);font-weight:700">${fw?'🏆 '+tname(fw)+' '+fin.winner_pct+'%':'—'}</div>
+  </div>`;
+
+  let html=`<table style="border-collapse:separate;border-spacing:4px 3px;min-width:1200px;width:100%"><thead><tr>
+    <th ${thStyle}>R32</th><th ${thStyle}>R16</th><th ${thStyle}>QF</th><th ${thStyle}>SF</th>
+    <th class="bk-th" style="background:linear-gradient(135deg,var(--pitch),var(--grass));border:2px solid var(--gold)">🏆 FINAL</th>
+    <th ${thStyle}>SF</th><th ${thStyle}>QF</th><th ${thStyle}>R16</th><th ${thStyle}>R32</th>
+  </tr></thead><tbody>`;
+
+  const r32=b.r32, r16=b.r16, qf=b.qf, sf=b.sf;
+
+  for(let row=0;row<8;row++){
+    html+='<tr>';
+    // Left R32
+    html+=cell(r32[row]);
+    // Left R16 (spans 2)
+    if(row%2===0) html+=cell(r16[Math.floor(row/2)],2);
+    // Left QF (spans 4)
+    if(row%4===0) html+=cell(qf[Math.floor(row/4)],4);
+    // Left SF (spans 8)
+    if(row===0) html+=`<td rowspan="8" style="vertical-align:middle;padding:2px">${matchCard(sf[0].home,sf[0].away,sf[0].winner,sf[0].winner_pct,sf[0].avg_goals)}</td>`;
+    // FINAL (spans 8)
+    if(row===0) html+=`<td rowspan="8" style="vertical-align:middle;padding:4px;min-width:170px">${finCard}</td>`;
+    // Right SF (spans 8)
+    if(row===0) html+=`<td rowspan="8" style="vertical-align:middle;padding:2px">${matchCard(sf[1].home,sf[1].away,sf[1].winner,sf[1].winner_pct,sf[1].avg_goals)}</td>`;
+    // Right QF (spans 4)
+    if(row%4===0) html+=cell(qf[2+Math.floor(row/4)],4);
+    // Right R16 (spans 2)
+    if(row%2===0) html+=cell(r16[4+Math.floor(row/2)],2);
+    // Right R32
+    html+=cell(r32[8+row]);
+    html+='</tr>';
+  }
+
+  html+='</tbody></table>';
+  document.getElementById('bracket-container').innerHTML=html;
+})();
+
+// MODEL SCORES
+(function(){
+  const sorted=[...RAW.ranked].sort((a,b)=>RAW.teams[b.code].score-RAW.teams[a.code].score);
+  function tc(s){return s>=65?'elite':s>=50?'strong':s>=35?'mid':'lower';}
+  document.getElementById('scores-grid').innerHTML=sorted.map(r=>{
+    const t=RAW.teams[r.code];
+    const m=t.modifier>=0?'+'+t.modifier.toFixed(1):t.modifier.toFixed(1);
+    return `<div class="score-card ${tc(t.score)}">
+      <div class="score-team"><div class="score-flag">${flag(r.code)}</div><div><div class="score-name">${t.name}</div><div class="score-conf">${t.conf} · Group ${t.group}</div></div></div>
+      <div class="pillars">
+        <div class="pillar"><div class="pillar-val">${t.P1.toFixed(0)}</div><div class="pillar-label">P1</div></div>
+        <div class="pillar"><div class="pillar-val">${t.P2.toFixed(0)}</div><div class="pillar-label">P2</div></div>
+        <div class="pillar"><div class="pillar-val">${t.P3.toFixed(0)}</div><div class="pillar-label">P3</div></div>
+        <div class="pillar"><div class="pillar-val">${t.P4.toFixed(0)}</div><div class="pillar-label">P4</div></div>
+      </div>
+      <div class="score-total">${t.base_score.toFixed(1)} base ${m} mod = <strong>${t.score.toFixed(2)}</strong></div>
+    </div>`;
+  }).join('');
+})();
+</script>
+</body>
+</html>
