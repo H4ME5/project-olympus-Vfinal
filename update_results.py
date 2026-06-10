@@ -1,36 +1,34 @@
 #!/usr/bin/env python3
 """
-PROJECT OLYMPUS — LIVE UPDATER (Smart polling)
-================================================
+PROJECT OLYMPUS — LIVE UPDATER (Smart polling + In-play win probability)
+=========================================================================
 GitHub Actions runs this every minute via cron.
-The script itself decides whether to actually fetch/update based on
-whether a match is currently in play or about to start.
-
+The script decides whether to actually fetch/update based on match state.
+ 
 Logic:
-  - Match in play (IN_PLAY / PAUSED)  → update + write JSON
-  - Match starting within 10 minutes  → update + write JSON
-  - No match active or imminent       → skip update, write nothing
-  - Between matchdays                 → skip
-
+  - Match IN_PLAY / PAUSED       → update every minute + in-play win prob
+  - Match starting within 10 min → update
+  - Nothing active               → skip, write nothing
+ 
 Required GitHub secret: FOOTBALL_API_KEY
 Free key: https://www.football-data.org/client/register
 """
-
+ 
 import os, json, math, sys, numpy as np
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 import urllib.request
-
+ 
 np.random.seed(int(datetime.now().timestamp()) % 999999)
-
+ 
 API_KEY  = os.environ.get('FOOTBALL_API_KEY', '')
 BASE_URL = 'https://api.football-data.org/v4'
-WC_ID    = 2000  # WC 2026 competition ID — verify once tournament is announced
-
-# ── Helpers ───────────────────────────────────────────────────────────
+WC_ID    = 2000  # Verify on football-data.org once WC 2026 is in their system
+ 
+# ── API helper ────────────────────────────────────────────────────────
 def api_get(path):
     if not API_KEY:
-        print("No API key found — skipping fetch")
+        print("No API key — skipping fetch")
         return None
     try:
         req = urllib.request.Request(
@@ -42,55 +40,15 @@ def api_get(path):
     except Exception as e:
         print(f"API error {path}: {e}")
         return None
-
+ 
 def parse_utc(s):
-    """Parse ISO datetime string to UTC datetime."""
     if not s: return None
     try:
-        s = s.replace('Z', '+00:00')
-        return datetime.fromisoformat(s)
+        return datetime.fromisoformat(s.replace('Z', '+00:00'))
     except:
         return None
-
-# ── Schedule check ────────────────────────────────────────────────────
-def should_update(matches):
-    """
-    Returns (should_update: bool, reason: str, next_kickoff: datetime|None)
-    Update if:
-      - Any match is IN_PLAY or PAUSED right now
-      - Any match kicks off within the next 10 minutes
-    Skip if:
-      - All matches are SCHEDULED/FINISHED and next kickoff is >10 min away
-    """
-    now = datetime.now(timezone.utc)
-    next_kickoff = None
-
-    for m in matches:
-        status = m.get('status', '')
-
-        # Currently live
-        if status in ('IN_PLAY', 'PAUSED'):
-            return True, f"Match in play: {m['homeTeam']['name']} vs {m['awayTeam']['name']}", None
-
-        # Check kickoff time
-        if status in ('SCHEDULED', 'TIMED'):
-            ko = parse_utc(m.get('utcDate'))
-            if ko:
-                mins_until = (ko - now).total_seconds() / 60
-                if -5 <= mins_until <= 10:
-                    # Starting very soon or just kicked off (API sometimes lags)
-                    return True, f"Kickoff imminent: {m['homeTeam']['name']} vs {m['awayTeam']['name']} in {mins_until:.0f}m", ko
-                if mins_until > 0:
-                    if next_kickoff is None or ko < next_kickoff:
-                        next_kickoff = ko
-
-    if next_kickoff:
-        mins = (next_kickoff - now).total_seconds() / 60
-        return False, f"No active matches. Next kickoff in {mins:.0f} minutes ({next_kickoff.strftime('%Y-%m-%d %H:%M UTC')})", next_kickoff
-
-    return False, "No active or upcoming matches found", None
-
-# ── Team name → code mapping ──────────────────────────────────────────
+ 
+# ── Team name → code ──────────────────────────────────────────────────
 NAME_MAP = {
     'Spain':'ESP','England':'ENG','Germany':'GER','France':'FRA',
     'Portugal':'POR','Brazil':'BRA','Argentina':'ARG','Netherlands':'NED',
@@ -108,156 +66,228 @@ NAME_MAP = {
     'Qatar':'QAT','Saudi Arabia':'KSA','Cape Verde':'CPV',
     'Tunisia':'TUN','New Zealand':'NZL','Curaçao':'CUW','Haiti':'HAI',
 }
-def name_to_code(name):
-    return NAME_MAP.get(name)
-
-# ── Parse completed results ───────────────────────────────────────────
+def name_to_code(name): return NAME_MAP.get(name)
+ 
+# ── Schedule check ────────────────────────────────────────────────────
+def should_update(matches):
+    now = datetime.now(timezone.utc)
+    next_kickoff = None
+    for m in matches:
+        status = m.get('status','')
+        if status in ('IN_PLAY','PAUSED'):
+            return True, f"Match live: {m['homeTeam']['name']} vs {m['awayTeam']['name']}", None
+        if status in ('SCHEDULED','TIMED'):
+            ko = parse_utc(m.get('utcDate'))
+            if ko:
+                mins = (ko - now).total_seconds() / 60
+                if -5 <= mins <= 10:
+                    return True, f"Kickoff imminent: {m['homeTeam']['name']} in {mins:.0f}m", ko
+                if mins > 0 and (next_kickoff is None or ko < next_kickoff):
+                    next_kickoff = ko
+    if next_kickoff:
+        mins = (next_kickoff - now).total_seconds() / 60
+        return False, f"Next kickoff in {mins:.0f}m ({next_kickoff.strftime('%Y-%m-%d %H:%M UTC')})", next_kickoff
+    return False, "No active or upcoming matches", None
+ 
+# ── Parse match results ───────────────────────────────────────────────
 def parse_results(matches):
     results = []
     for m in matches:
-        status = m.get('status', '')
-        score  = m.get('score', {})
-        ft     = score.get('fullTime', {})
-        hg     = ft.get('home')
-        ag     = ft.get('away')
-
-        home_code = name_to_code(m['homeTeam']['name'])
-        away_code = name_to_code(m['awayTeam']['name'])
-        if not home_code or not away_code:
-            continue
-
-        # Include in-play matches with current score too
-        if status in ('IN_PLAY', 'PAUSED'):
-            live_score = score.get('halfTime', ft)
-            hg = live_score.get('home', 0) or 0
-            ag = live_score.get('away', 0) or 0
+        status = m.get('status','')
+        score  = m.get('score',{})
+        hc     = name_to_code(m['homeTeam']['name'])
+        ac     = name_to_code(m['awayTeam']['name'])
+        if not hc or not ac: continue
+ 
+        if status in ('IN_PLAY','PAUSED'):
+            # Use current score (regularTime or fullTime, fallback to 0)
+            cur = score.get('regularTime') or score.get('fullTime') or {}
+            hg  = cur.get('home') or 0
+            ag  = cur.get('away') or 0
+            # Get current minute from API
+            minute = m.get('minute') or m.get('currentPeriod',{}).get('minute') or 0
             results.append({
-                'home': home_code, 'away': away_code,
-                'hg': hg, 'ag': ag, 'live': True,
-                'stage': m.get('stage', 'GROUP_STAGE'),
-                'date': m.get('utcDate','')[:10],
-                'status': status,
+                'home':hc,'away':ac,'hg':hg,'ag':ag,
+                'minute': int(minute),
+                'live':True,'stage':m.get('stage','GROUP_STAGE'),
+                'date':m.get('utcDate','')[:10],'status':status,
             })
-        elif status == 'FINISHED' and hg is not None and ag is not None:
+        elif status == 'FINISHED':
+            ft = score.get('fullTime',{})
+            hg = ft.get('home'); ag = ft.get('away')
+            if hg is None or ag is None: continue
             results.append({
-                'home': home_code, 'away': away_code,
-                'hg': hg, 'ag': ag, 'live': False,
-                'stage': m.get('stage', 'GROUP_STAGE'),
-                'date': m.get('utcDate','')[:10],
-                'status': 'FINISHED',
+                'home':hc,'away':ac,'hg':hg,'ag':ag,
+                'minute':90,'live':False,
+                'stage':m.get('stage','GROUP_STAGE'),
+                'date':m.get('utcDate','')[:10],'status':'FINISHED',
             })
     return results
-
+ 
 def get_remaining(matches):
-    remaining = []
     now = datetime.now(timezone.utc)
+    rem = []
     for m in matches:
-        if m.get('status') not in ('SCHEDULED', 'TIMED'):
-            continue
-        home_code = name_to_code(m['homeTeam']['name'])
-        away_code = name_to_code(m['awayTeam']['name'])
-        if not home_code or not away_code:
-            continue
+        if m.get('status') not in ('SCHEDULED','TIMED'): continue
+        hc = name_to_code(m['homeTeam']['name'])
+        ac = name_to_code(m['awayTeam']['name'])
+        if not hc or not ac: continue
         ko = parse_utc(m.get('utcDate'))
-        remaining.append({
-            'home': home_code, 'away': away_code,
-            'date': m.get('utcDate','')[:16].replace('T',' ') + ' UTC',
-            'stage': m.get('stage',''),
-            'mins_until': round((ko - now).total_seconds()/60) if ko else 9999,
+        rem.append({
+            'home':hc,'away':ac,
+            'date':m.get('utcDate','')[:16].replace('T',' ')+' UTC',
+            'stage':m.get('stage',''),
+            'mins_until': round((ko-now).total_seconds()/60) if ko else 9999,
         })
-    remaining.sort(key=lambda x: x['mins_until'])
-    return remaining[:15]
-
-# ── Live group standings ──────────────────────────────────────────────
+    rem.sort(key=lambda x: x['mins_until'])
+    return rem[:15]
+ 
+# ── In-play win probability ───────────────────────────────────────────
+BASE_GOALS = 1.35
+EXP        = 1.15
+N_LIVE     = 10000  # simulations for in-play probability
+ 
+def get_lambdas(home, away, teams):
+    """Expected goals per 90 min for each team based on model scores."""
+    hd = teams[home]; ad = teams[away]
+    h_att = ((hd['P2']*0.50+hd['P1']*0.28+hd['P3']*0.12+hd['P4']*0.10)/100)**EXP
+    a_def = ((ad['P1']*0.50+ad['P2']*0.22+ad['P4']*0.18+ad['P3']*0.10)/100)**EXP
+    a_att = ((ad['P2']*0.50+ad['P1']*0.28+ad['P3']*0.12+ad['P4']*0.10)/100)**EXP
+    h_def = ((hd['P1']*0.50+hd['P2']*0.22+hd['P4']*0.18+hd['P3']*0.10)/100)**EXP
+    lh = max(0.1, BASE_GOALS * h_att / max(a_def, 0.1))
+    la = max(0.1, BASE_GOALS * a_att / max(h_def, 0.1))
+    return lh, la
+ 
+def live_win_probability(home, away, hg_now, ag_now, minute, teams):
+    """
+    Given current scoreline and match minute, simulate the remaining
+    time and return win/draw/loss probabilities for the home team.
+    """
+    if home not in teams or away not in teams:
+        return None
+ 
+    lh_90, la_90 = get_lambdas(home, away, teams)
+ 
+    # Remaining fraction of match
+    mins_played = max(1, min(int(minute), 89))
+    remaining   = (90 - mins_played) / 90
+ 
+    # Scaled lambdas for remaining time
+    lh_rem = lh_90 * remaining
+    la_rem = la_90 * remaining
+ 
+    # Simulate N_LIVE completions from current scoreline
+    extra_h = np.random.poisson(lh_rem, N_LIVE)
+    extra_a = np.random.poisson(la_rem, N_LIVE)
+ 
+    final_h = hg_now + extra_h
+    final_a = ag_now + extra_a
+ 
+    h_wins = int(np.sum(final_h > final_a))
+    draws  = int(np.sum(final_h == final_a))
+    a_wins = int(np.sum(final_a > final_h))
+ 
+    # For knockout matches, draws go to ET/pens
+    # For group stage, draws are valid — show as draw
+    h_pen  = teams[home].get('penalty_rec', 50)
+    a_pen  = teams[away].get('penalty_rec', 50)
+    pen_h  = h_pen / (h_pen + a_pen)
+ 
+    return {
+        'home_win':  round(h_wins / N_LIVE * 100, 1),
+        'draw':      round(draws  / N_LIVE * 100, 1),
+        'away_win':  round(a_wins / N_LIVE * 100, 1),
+        'pen_home':  round(pen_h * 100, 1),  # if it goes to pens
+        'minute':    mins_played,
+        'remaining': round(remaining * 90, 0),
+    }
+ 
+def compute_all_live_probs(live_matches, teams):
+    """Compute in-play win probability for every currently live match."""
+    probs = []
+    for r in live_matches:
+        if not r.get('live'): continue
+        prob = live_win_probability(
+            r['home'], r['away'],
+            r['hg'], r['ag'],
+            r.get('minute', 45),
+            teams
+        )
+        if prob:
+            probs.append({
+                'home':    r['home'],
+                'away':    r['away'],
+                'hg':      r['hg'],
+                'ag':      r['ag'],
+                'minute':  r.get('minute', 45),
+                'stage':   r.get('stage',''),
+                'prob':    prob,
+            })
+    return probs
+ 
+# ── Group standings ───────────────────────────────────────────────────
 def compute_standings(results, base_groups):
     standings = {}
     for g, teams in base_groups.items():
-        tbl = {t['code']: {'pts':0,'gd':0,'gf':0,'ga':0,'played':0}
-               for t in teams}
+        tbl = {t['code']:{'pts':0,'gd':0,'gf':0,'ga':0,'played':0} for t in teams}
         standings[g] = tbl
-
+ 
     for r in results:
-        if 'GROUP' not in r.get('stage', 'GROUP_STAGE'):
-            continue
-        h, a = r['home'], r['away']
-        grp  = None
-        for g, teams in base_groups.items():
-            codes = [t['code'] for t in teams]
-            if h in codes and a in codes:
-                grp = g; break
-        if not grp:
-            continue
-
-        hg, ag = r['hg'], r['ag']
-        if r.get('live'):
-            continue  # Don't count in-play matches in standings yet
-
+        if 'GROUP' not in r.get('stage','GROUP_STAGE'): continue
+        if r.get('live'): continue  # don't count in-play in standings
+        h,a = r['home'],r['away']
+        grp = None
+        for g,teams in base_groups.items():
+            if h in [t['code'] for t in teams] and a in [t['code'] for t in teams]:
+                grp=g; break
+        if not grp: continue
+        hg,ag = r['hg'],r['ag']
         s = standings[grp]
-        s[h]['gf']+=hg; s[h]['ga']+=ag; s[h]['gd']+=hg-ag; s[h]['played']+=1
-        s[a]['gf']+=ag; s[a]['ga']+=hg; s[a]['gd']+=ag-hg; s[a]['played']+=1
+        s[h]['gf']+=hg;s[h]['ga']+=ag;s[h]['gd']+=hg-ag;s[h]['played']+=1
+        s[a]['gf']+=ag;s[a]['ga']+=hg;s[a]['gd']+=ag-hg;s[a]['played']+=1
         if hg>ag:   s[h]['pts']+=3
         elif ag>hg: s[a]['pts']+=3
-        else:       s[h]['pts']+=1; s[a]['pts']+=1
-
-    # Sort each group
-    sorted_standings = {}
-    for g, tbl in standings.items():
-        sorted_standings[g] = sorted(
-            tbl.items(),
-            key=lambda x: (-x[1]['pts'], -x[1]['gd'], -x[1]['gf'])
-        )
-    return sorted_standings
-
+        else:       s[h]['pts']+=1;s[a]['pts']+=1
+ 
+    return {g: sorted(tbl.items(), key=lambda x:(-x[1]['pts'],-x[1]['gd'],-x[1]['gf']))
+            for g,tbl in standings.items()}
+ 
 # ── Bayesian score update ─────────────────────────────────────────────
 def update_scores(base_teams, finished_results):
-    teams = {code: dict(t) for code, t in base_teams.items()}
-    BASE_GOALS = 1.35; EXP = 1.15
-
-    def pred_xg(home, away):
-        hd=teams[home]; ad=teams[away]
-        h_att=((hd['P2']*0.50+hd['P1']*0.28+hd['P3']*0.12+hd['P4']*0.10)/100)**EXP
-        a_def=((ad['P1']*0.50+ad['P2']*0.22+ad['P4']*0.18+ad['P3']*0.10)/100)**EXP
-        a_att=((ad['P2']*0.50+ad['P1']*0.28+ad['P3']*0.12+ad['P4']*0.10)/100)**EXP
-        h_def=((hd['P1']*0.50+hd['P2']*0.22+hd['P4']*0.18+hd['P3']*0.10)/100)**EXP
-        return max(0.1, BASE_GOALS*h_att/max(a_def,0.1)), max(0.1, BASE_GOALS*a_att/max(h_def,0.1))
-
+    teams = {code: dict(t) for code,t in base_teams.items()}
     actual   = defaultdict(lambda:{'gf':0,'ga':0,'n':0})
     expected = defaultdict(lambda:{'gf':0.0,'ga':0.0})
-
+ 
     for r in finished_results:
         h,a = r['home'],r['away']
         if h not in teams or a not in teams or r.get('live'): continue
-        ph,pa = pred_xg(h,a)
-        actual[h]['gf']+=r['hg']; actual[h]['ga']+=r['ag']; actual[h]['n']+=1
-        actual[a]['gf']+=r['ag']; actual[a]['ga']+=r['hg']; actual[a]['n']+=1
-        expected[h]['gf']+=ph; expected[h]['ga']+=pa
-        expected[a]['gf']+=pa; expected[a]['ga']+=ph
-
+        lh,la = get_lambdas(h,a,teams)
+        actual[h]['gf']+=r['hg'];actual[h]['ga']+=r['ag'];actual[h]['n']+=1
+        actual[a]['gf']+=r['ag'];actual[a]['ga']+=r['hg'];actual[a]['n']+=1
+        expected[h]['gf']+=lh;expected[h]['ga']+=la
+        expected[a]['gf']+=la;expected[a]['ga']+=lh
+ 
     LEARN = 0.08
     for code in teams:
         n = actual[code]['n']
-        if n == 0: continue
-        att_d = (actual[code]['gf']/n - expected[code]['gf']/n) * LEARN * 10
-        def_d = (expected[code]['ga']/n - actual[code]['ga']/n) * LEARN * 8
-        nudge = max(-8.0, min(6.0, att_d + def_d))
-        teams[code]['score']      = round(teams[code]['score'] + nudge, 2)
-        teams[code]['form_nudge'] = round(nudge, 2)
+        if n==0: continue
+        att_d = (actual[code]['gf']/n - expected[code]['gf']/n)*LEARN*10
+        def_d = (expected[code]['ga']/n - actual[code]['ga']/n)*LEARN*8
+        nudge = max(-8.0, min(6.0, att_d+def_d))
+        teams[code]['score']      = round(teams[code]['score']+nudge,2)
+        teams[code]['form_nudge'] = round(nudge,2)
         teams[code]['played']     = n
     return teams
-
+ 
 # ── Eliminated teams ──────────────────────────────────────────────────
-def get_eliminated(results, base_groups):
-    """Teams knocked out in KO rounds, or mathematically eliminated from groups."""
+def get_eliminated(results):
     elim = set()
     for r in results:
-        stage = r.get('stage','')
-        if r.get('live') or 'GROUP' in stage:
-            continue
-        # KO loss
-        if r['hg'] < r['ag']:  elim.add(r['home'])
-        elif r['ag'] < r['hg']: elim.add(r['away'])
+        if r.get('live') or 'GROUP' in r.get('stage',''): continue
+        if r['hg']<r['ag']: elim.add(r['home'])
+        elif r['ag']<r['hg']: elim.add(r['away'])
     return list(elim)
-
+ 
 # ── Tournament phase ──────────────────────────────────────────────────
 def get_phase(matches):
     stages = set(m.get('stage','') for m in matches
@@ -268,76 +298,77 @@ def get_phase(matches):
     if any('ROUND_OF' in s or 'LAST_32' in s for s in stages): return 'ROUND_OF_32'
     if any('GROUP'   in s for s in stages): return 'GROUP_STAGE'
     return 'PRE_TOURNAMENT'
-
+ 
 # ── Main ──────────────────────────────────────────────────────────────
 def main():
     now = datetime.now(timezone.utc)
     print(f"Project Olympus Live Updater — {now.isoformat()}")
-
-    # Load base predictions
+ 
     with open('olympus_v2p_results.json') as f:
         BASE = json.load(f)
-
-    # Fetch all WC matches
+ 
     print("Fetching schedule from football-data.org...")
     data = api_get(f'/competitions/{WC_ID}/matches')
     if not data:
         print("Could not fetch schedule — aborting")
         sys.exit(0)
-
-    matches = data.get('matches', [])
-    print(f"  Total matches in competition: {len(matches)}")
-
-    # ── Smart polling: decide whether to actually update ──────────────
+ 
+    matches   = data.get('matches',[])
+    print(f"  Total matches: {len(matches)}")
+ 
     update, reason, next_ko = should_update(matches)
     print(f"  Should update: {update} — {reason}")
-
+ 
     if not update:
-        # Write a minimal status file so the dashboard knows when next match is
-        status = {
-            'meta': {
-                'last_checked': now.isoformat()+'Z',
-                'next_kickoff': next_ko.isoformat() if next_ko else None,
-                'phase': get_phase(matches),
-                'live': False,
-                'updating': False,
-                'reason': reason,
-            }
-        }
-        # Only write if file doesn't exist yet (avoid constant commits)
         if not os.path.exists('olympus_live.json'):
+            status = {'meta':{
+                'last_checked':now.isoformat()+'Z',
+                'next_kickoff':next_ko.isoformat() if next_ko else None,
+                'phase':get_phase(matches),'live':False,'updating':False,'reason':reason,
+            }}
             with open('olympus_live.json','w') as f:
-                json.dump(status, f, separators=(',',':'))
+                json.dump(status,f,separators=(',',':'))
             print("Wrote initial status file")
         else:
             print("No update needed — skipping commit")
         sys.exit(0)
-
-    # ── Active match window — do the full update ──────────────────────
+ 
+    # ── Active window — full update ───────────────────────────────────
     print("Active match window — running full update...")
-
+ 
     results   = parse_results(matches)
     remaining = get_remaining(matches)
     finished  = [r for r in results if not r.get('live')]
     live_now  = [r for r in results if r.get('live')]
     phase     = get_phase(matches)
-
-    print(f"  Finished: {len(finished)} | Live now: {len(live_now)} | Remaining: {len(remaining)}")
-
+ 
+    print(f"  Finished: {len(finished)} | Live: {len(live_now)} | Remaining: {len(remaining)}")
+ 
     updated_teams = update_scores(BASE['teams'], finished)
     standings     = compute_standings(results, BASE['groups'])
-    eliminated    = get_eliminated(results, BASE['groups'])
-
+    eliminated    = get_eliminated(results)
+ 
+    # ── In-play win probabilities ─────────────────────────────────────
+    live_probs = compute_all_live_probs(live_now, updated_teams)
+    if live_probs:
+        print(f"  In-play probabilities computed for {len(live_probs)} match(es):")
+        for lp in live_probs:
+            p = lp['prob']
+            hn = BASE['teams'].get(lp['home'],{}).get('name',lp['home'])
+            an = BASE['teams'].get(lp['away'],{}).get('name',lp['away'])
+            print(f"    {hn} {lp['hg']}-{lp['ag']} {an} @ {lp['minute']}' → "
+                  f"H:{p['home_win']}% D:{p['draw']}% A:{p['away_win']}%")
+ 
     output = {
         'meta': {
             **BASE['meta'],
-            'last_updated':       now.isoformat()+'Z',
-            'phase':              phase,
-            'matches_completed':  len(finished),
-            'matches_live':       len(live_now),
-            'matches_remaining':  len(remaining),
-            'live':               True,
-            'updating':           True,
+            'last_updated':      now.isoformat()+'Z',
+            'phase':             phase,
+            'matches_completed': len(finished),
+            'matches_live':      len(live_now),
+            'matches_remaining': len(remaining),
+            'live':              True,
+            'updating':          True,
         },
         'teams':   updated_teams,
         'groups':  BASE['groups'],
@@ -350,8 +381,9 @@ def main():
         ),
         'bracket': BASE['bracket'],
         'live': {
-            'results':    results[-30:],   # last 30 results
-            'live_now':   live_now,        # in-play right now
+            'results':    results[-30:],
+            'live_now':   live_now,
+            'live_probs': live_probs,   # ← in-play win probabilities
             'remaining':  remaining,
             'standings':  standings,
             'eliminated': eliminated,
@@ -359,14 +391,14 @@ def main():
             'next_kickoff': next_ko.isoformat() if next_ko else None,
         }
     }
-
+ 
     with open('olympus_live.json','w') as f:
-        json.dump(output, f, separators=(',',':'))
-
+        json.dump(output,f,separators=(',',':'))
+ 
     size = os.path.getsize('olympus_live.json')
     print(f"Wrote olympus_live.json ({size//1024}KB)")
-    print(f"Phase: {phase} | Live matches: {len(live_now)}")
+    print(f"Phase: {phase} | Live: {len(live_now)} | In-play probs: {len(live_probs)}")
     print("Done.")
-
+ 
 if __name__ == '__main__':
     main()
