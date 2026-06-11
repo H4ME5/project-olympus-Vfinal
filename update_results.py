@@ -5,24 +5,25 @@ PROJECT OLYMPUS — LIVE UPDATER (API-Football / RapidAPI)
 Uses api-football186.p.rapidapi.com for match data.
 Runs every minute via GitHub Actions cron.
 Smart polling: only updates during/around live matches.
- 
+
 Required GitHub secret: RAPIDAPI_KEY
 Get key at: rapidapi.com → search API Football
 """
- 
+
 import os, json, math, sys, numpy as np
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 import urllib.request
- 
+
 np.random.seed(int(datetime.now().timestamp()) % 999999)
- 
+
 RAPIDAPI_KEY  = os.environ.get('RAPIDAPI_KEY', '')
+print(f'  API key present: {bool(RAPIDAPI_KEY)} | length: {len(RAPIDAPI_KEY)}')
 RAPIDAPI_HOST = 'api-football186.p.rapidapi.com'
 BASE_URL      = f'https://{RAPIDAPI_HOST}'
 WC_LEAGUE     = 1      # API-Football WC 2026 league ID
 WC_SEASON     = 2026
- 
+
 # ── API helper ────────────────────────────────────────────────────────
 def api_get(path):
     if not RAPIDAPI_KEY:
@@ -42,7 +43,7 @@ def api_get(path):
     except Exception as e:
         print(f"API error {path}: {e}")
         return None
- 
+
 def parse_utc(s):
     if not s: return None
     try:
@@ -53,7 +54,7 @@ def parse_utc(s):
             return datetime.fromisoformat(s)
         except:
             return None
- 
+
 # ── Team name → our 3-letter code ────────────────────────────────────
 NAME_MAP = {
     'Spain':'ESP','England':'ENG','Germany':'GER','France':'FRA',
@@ -76,14 +77,14 @@ NAME_MAP = {
 def name_to_code(name):
     if not name: return None
     return NAME_MAP.get(name) or NAME_MAP.get(name.strip())
- 
+
 # ── Fetch all WC fixtures ─────────────────────────────────────────────
 def fetch_fixtures():
     data = api_get(f'/fixtures?league={WC_LEAGUE}&season={WC_SEASON}')
     if not data:
         return []
     return data.get('response', [])
- 
+
 # ── Parse fixture into our format ────────────────────────────────────
 def parse_fixture(fx):
     fixture  = fx.get('fixture', {})
@@ -133,12 +134,12 @@ def parse_fixture(fx):
         'finished':   is_finished,
         'upcoming':   is_upcoming,
     }
- 
+
 # ── Schedule check ────────────────────────────────────────────────────
 def should_update(fixtures):
     now = datetime.now(timezone.utc)
     next_kickoff = None
- 
+
     for fx in fixtures:
         if fx['live']:
             return True, f"Match live: {fx['home_name']} vs {fx['away_name']} ({fx['minute']}')", None
@@ -148,27 +149,27 @@ def should_update(fixtures):
                 return True, f"Kickoff imminent: {fx['home_name']} vs {fx['away_name']} in {mins:.0f}m", fx['kickoff']
             if mins > 0 and (next_kickoff is None or fx['kickoff'] < next_kickoff):
                 next_kickoff = fx['kickoff']
- 
+
     if next_kickoff:
         mins = (next_kickoff - now).total_seconds() / 60
         return False, f"Next kickoff in {mins:.0f}m ({next_kickoff.strftime('%Y-%m-%d %H:%M UTC')})", next_kickoff
- 
+
     # Check if there were recent matches in the last 2 hours (just finished)
     for fx in fixtures:
         if fx['finished'] and fx['kickoff']:
             age_hours = (now - fx['kickoff']).total_seconds() / 3600
             if age_hours < 3:
                 return True, f"Recent match result: {fx['home_name']} {fx['hg']}-{fx['ag']} {fx['away_name']}", None
- 
+
     return False, "No active or upcoming matches", None
- 
+
 # ── Group standings from completed results ────────────────────────────
 def compute_standings(finished, base_groups):
     standings = {}
     for g, teams in base_groups.items():
         tbl = {t['code']: {'pts':0,'gd':0,'gf':0,'ga':0,'played':0} for t in teams}
         standings[g] = tbl
- 
+
     for fx in finished:
         h, a = fx['home'], fx['away']
         if not h or not a: continue
@@ -179,7 +180,7 @@ def compute_standings(finished, base_groups):
                 grp = g; break
         if not grp: continue
         if 'Group' not in fx.get('stage', 'Group'): continue
- 
+
         hg, ag = fx['hg'], fx['ag']
         s = standings[grp]
         s[h]['gf']+=hg; s[h]['ga']+=ag; s[h]['gd']+=hg-ag; s[h]['played']+=1
@@ -187,14 +188,14 @@ def compute_standings(finished, base_groups):
         if hg>ag:   s[h]['pts']+=3
         elif ag>hg: s[a]['pts']+=3
         else:       s[h]['pts']+=1; s[a]['pts']+=1
- 
+
     return {g: sorted(tbl.items(), key=lambda x:(-x[1]['pts'],-x[1]['gd'],-x[1]['gf']))
             for g, tbl in standings.items()}
- 
+
 # ── Bayesian score update ─────────────────────────────────────────────
 BASE_GOALS = 1.35
 EXP        = 1.15
- 
+
 def get_lambdas(home, away, teams):
     hd = teams[home]; ad = teams[away]
     h_att = ((hd['P2']*0.50+hd['P1']*0.28+hd['P3']*0.12+hd['P4']*0.10)/100)**EXP
@@ -202,12 +203,12 @@ def get_lambdas(home, away, teams):
     a_att = ((ad['P2']*0.50+ad['P1']*0.28+ad['P3']*0.12+ad['P4']*0.10)/100)**EXP
     h_def = ((hd['P1']*0.50+hd['P2']*0.22+hd['P4']*0.18+hd['P3']*0.10)/100)**EXP
     return max(0.1, BASE_GOALS*h_att/max(a_def,0.1)), max(0.1, BASE_GOALS*a_att/max(h_def,0.1))
- 
+
 def update_scores(base_teams, finished):
     teams    = {code: dict(t) for code,t in base_teams.items()}
     actual   = defaultdict(lambda:{'gf':0,'ga':0,'n':0})
     expected = defaultdict(lambda:{'gf':0.0,'ga':0.0})
- 
+
     for fx in finished:
         h, a = fx['home'], fx['away']
         if not h or not a or h not in teams or a not in teams: continue
@@ -216,7 +217,7 @@ def update_scores(base_teams, finished):
         actual[a]['gf']+=fx['ag']; actual[a]['ga']+=fx['hg']; actual[a]['n']+=1
         expected[h]['gf']+=lh; expected[h]['ga']+=la
         expected[a]['gf']+=la; expected[a]['ga']+=lh
- 
+
     LEARN = 0.08
     for code in teams:
         n = actual[code]['n']
@@ -228,10 +229,10 @@ def update_scores(base_teams, finished):
         teams[code]['form_nudge'] = round(nudge, 2)
         teams[code]['played']     = n
     return teams
- 
+
 # ── In-play win probability ───────────────────────────────────────────
 N_LIVE = 10000
- 
+
 def live_win_probability(home, away, hg_now, ag_now, minute, teams):
     if home not in teams or away not in teams: return None
     lh_90, la_90 = get_lambdas(home, away, teams)
@@ -251,7 +252,7 @@ def live_win_probability(home, away, hg_now, ag_now, minute, teams):
         'minute':    mins_played,
         'remaining': round(remaining*90, 0),
     }
- 
+
 def compute_live_probs(live_fixtures, teams):
     probs = []
     for fx in live_fixtures:
@@ -267,7 +268,7 @@ def compute_live_probs(live_fixtures, teams):
                 'prob': prob,
             })
     return probs
- 
+
 # ── Eliminated teams ──────────────────────────────────────────────────
 def get_eliminated(finished):
     elim = set()
@@ -276,7 +277,7 @@ def get_eliminated(finished):
         if fx['hg'] < fx['ag']: elim.add(fx['home'])
         elif fx['ag'] < fx['hg']: elim.add(fx['away'])
     return list(e for e in elim if e)
- 
+
 # ── Tournament phase ──────────────────────────────────────────────────
 def get_phase(fixtures):
     stages = set(fx['stage'] for fx in fixtures if fx['finished'] or fx['live'])
@@ -286,7 +287,7 @@ def get_phase(fixtures):
     if any('Round of 32' in s or 'Last 32' in s for s in stages): return 'ROUND_OF_32'
     if any('Group' in s for s in stages): return 'GROUP_STAGE'
     return 'PRE_TOURNAMENT'
- 
+
 # ── Format results for dashboard ─────────────────────────────────────
 def format_result(fx):
     return {
@@ -296,7 +297,7 @@ def format_result(fx):
         'date': fx['date'], 'status': fx['status'],
         'minute': fx['minute'],
     }
- 
+
 def format_fixture(fx):
     return {
         'home': fx['home'], 'away': fx['away'],
@@ -305,21 +306,21 @@ def format_fixture(fx):
         'mins_until': round((fx['kickoff'] - datetime.now(timezone.utc)).total_seconds()/60)
                       if fx['kickoff'] else 9999,
     }
- 
+
 # ── Main ──────────────────────────────────────────────────────────────
 def main():
     now = datetime.now(timezone.utc)
     print(f"Project Olympus Live Updater — {now.isoformat()}")
- 
+
     with open('olympus_v2p_results.json') as f:
         BASE = json.load(f)
- 
+
     print(f"Fetching WC 2026 fixtures (league={WC_LEAGUE}, season={WC_SEASON})...")
     raw_fixtures = fetch_fixtures()
     if not raw_fixtures:
         print("No fixtures returned — aborting")
         sys.exit(0)
- 
+
     # Parse all fixtures
     fixtures = []
     for fx in raw_fixtures:
@@ -333,21 +334,21 @@ def main():
             a = teams.get('away', {}).get('name', '?')
             if not parsed['home'] or not parsed['away']:
                 print(f"  Unmapped: {h} vs {a}")
- 
+
     print(f"  Total fixtures parsed: {len(fixtures)}")
- 
+
     # Categorise
     finished  = [fx for fx in fixtures if fx['finished']]
     live_now  = [fx for fx in fixtures if fx['live']]
     upcoming  = sorted([fx for fx in fixtures if fx['upcoming'] and fx['kickoff']],
                         key=lambda x: x['kickoff'])
- 
+
     print(f"  Finished: {len(finished)} | Live: {len(live_now)} | Upcoming: {len(upcoming)}")
- 
+
     # Should we update?
     update, reason, next_ko = should_update(fixtures)
     print(f"  Should update: {update} — {reason}")
- 
+
     if not update:
         if not os.path.exists('olympus_live.json'):
             status = {'meta': {
@@ -362,7 +363,7 @@ def main():
         else:
             print("No update needed — skipping commit")
         sys.exit(0)
- 
+
     # ── Full update ───────────────────────────────────────────────────
     print("Running full update...")
     phase         = get_phase(fixtures)
@@ -370,7 +371,7 @@ def main():
     standings     = compute_standings(finished, BASE['groups'])
     eliminated    = get_eliminated(finished)
     live_probs    = compute_live_probs(live_now, updated_teams)
- 
+
     if live_probs:
         for lp in live_probs:
             p = lp['prob']
@@ -378,11 +379,11 @@ def main():
             an = BASE['teams'].get(lp['away'],{}).get('name', lp['away'])
             print(f"  In-play: {hn} {lp['hg']}-{lp['ag']} {an} @ {lp['minute']}' "
                   f"→ H:{p['home_win']}% D:{p['draw']}% A:{p['away_win']}%")
- 
+
     if finished:
         print(f"  Latest result: {finished[-1]['home_name']} "
               f"{finished[-1]['hg']}-{finished[-1]['ag']} {finished[-1]['away_name']}")
- 
+
     output = {
         'meta': {
             **BASE['meta'],
@@ -415,14 +416,14 @@ def main():
             'next_kickoff': next_ko.isoformat() if next_ko else None,
         }
     }
- 
+
     with open('olympus_live.json', 'w') as f:
         json.dump(output, f, separators=(',',':'))
- 
+
     size = os.path.getsize('olympus_live.json')
     print(f"Wrote olympus_live.json ({size//1024}KB)")
     print(f"Phase: {phase} | Results: {len(finished)} | Live: {len(live_now)}")
     print("Done.")
- 
+
 if __name__ == '__main__':
     main()
