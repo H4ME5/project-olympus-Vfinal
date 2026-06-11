@@ -37,7 +37,20 @@ def api_get(path):
             }
         )
         resp = urllib.request.urlopen(req, timeout=10)
-        return json.loads(resp.read())
+        raw = resp.read()
+        parsed = json.loads(raw)
+        # Debug: show raw structure on first call
+        if '/competition_matches_list' in path:
+            print(f"  Raw response type: {type(parsed).__name__}")
+            if isinstance(parsed, dict):
+                print(f"  Response keys: {list(parsed.keys())}")
+            elif isinstance(parsed, list):
+                print(f"  Response is list of {len(parsed)} items")
+                if parsed and isinstance(parsed[0], dict):
+                    print(f"  First item keys: {list(parsed[0].keys())[:8]}")
+                elif parsed:
+                    print(f"  First item type: {type(parsed[0]).__name__} = {str(parsed[0])[:100]}")
+        return parsed
     except Exception as e:
         print(f"API error {path}: {e}")
         return None
@@ -100,9 +113,18 @@ def fetch_fixtures():
         data = api_get(f'/competition_matches_list?date={fetch_date}&timezone=UTC')
         if not data:
             continue
-        matches = data if isinstance(data, list) else data.get('matches', data.get('data', data.get('response', [])))
+        # Handle different response structures
+        if isinstance(data, list):
+            matches = data
+        elif isinstance(data, dict):
+            matches = data.get('matches', data.get('data', data.get('response', data.get('results', []))))
+        else:
+            matches = []
+        # Only keep dict objects (actual match records)
         for m in matches:
-            mid = m.get('id') or m.get('fixture_id') or m.get('match_id') or str(m)
+            if not isinstance(m, dict):
+                continue
+            mid = m.get('id') or m.get('fixture_id') or m.get('match_id') or id(m)
             if mid not in seen_ids:
                 seen_ids.add(mid)
                 all_matches.append(m)
