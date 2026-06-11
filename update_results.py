@@ -125,32 +125,23 @@ def fetch_fixtures():
         data = api_get(f'/competition_matches_list?date={fetch_date}&timezone=UTC')
         if not data:
             continue
-        # Structure: data -> response -> items -> list of matches
+        # Structure: data -> response -> items -> [{cid, matches: [match, ...]}, ...]
         if isinstance(data, dict):
             response = data.get('response', {})
-            if isinstance(response, dict):
-                matches = response.get('items', [])
-            elif isinstance(response, list):
-                matches = response
-            else:
-                matches = []
-        elif isinstance(data, list):
-            matches = data
+            items = response.get('items', []) if isinstance(response, dict) else []
         else:
-            matches = []
+            items = []
         
-        # Only keep FIFA World Cup matches (cid 1382)
-        for m in matches:
-            if not isinstance(m, dict):
-                continue
-            # Filter to WC only if cid is present
-            cid = str(m.get('cid', ''))
-            if cid and cid != '1382':
-                continue
-            mid = m.get('mid') or m.get('id') or m.get('match_id') or m.get('fixture_id') or id(m)
-            if mid not in seen_ids:
-                seen_ids.add(mid)
-                all_matches.append(m)
+        for comp in items:
+            if not isinstance(comp, dict): continue
+            # Only FIFA World Cup (cid 1382)
+            if str(comp.get('cid', '')) != '1382': continue
+            for m in comp.get('matches', []):
+                if not isinstance(m, dict): continue
+                mid = str(m.get('mid') or m.get('id') or id(m))
+                if mid not in seen_ids:
+                    seen_ids.add(mid)
+                    all_matches.append(m)
     
     print(f"  Fetched {len(all_matches)} total matches across {len(dates_to_fetch)} dates")
     # Debug: print first match structure
@@ -161,47 +152,59 @@ def fetch_fixtures():
 
 # ── Parse fixture into our format ────────────────────────────────────
 def parse_fixture(fx):
-    fixture  = fx.get('fixture', {})
-    teams    = fx.get('teams', {})
-    goals    = fx.get('goals', {})
-    status   = fixture.get('status', {})
+    # This API structure:
+    # { mid, result: {home, away, winner},
+    #   teams: {home: {tname, abbr}, away: {tname, abbr}},
+    #   status: {short, long}, date_time, round, elapsed }
     
-    home_name = teams.get('home', {}).get('name', '')
-    away_name = teams.get('away', {}).get('name', '')
+    teams     = fx.get('teams', {})
+    result    = fx.get('result', {})
+    status    = fx.get('status', {})
+    
+    home_name = teams.get('home', {}).get('tname', '') or teams.get('home', {}).get('fullname', '')
+    away_name = teams.get('away', {}).get('tname', '') or teams.get('away', {}).get('fullname', '')
     home_code = name_to_code(home_name)
     away_code = name_to_code(away_name)
     
-    status_short = status.get('short', '')  # NS, 1H, HT, 2H, FT, AET, PEN
-    status_long  = status.get('long', '')
-    elapsed      = status.get('elapsed') or 0
+    # Status: can be dict or string
+    if isinstance(status, dict):
+        status_short = status.get('short', '') or status.get('code', '')
+        status_long  = status.get('long', '') or status.get('name', '')
+    else:
+        status_short = str(status)
+        status_long  = str(status)
     
-    hg = goals.get('home')
-    ag = goals.get('away')
+    elapsed = fx.get('elapsed') or fx.get('minute') or 0
     
-    # Map API-Football status to our statuses
-    is_live     = status_short in ('1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE')
-    is_finished = status_short in ('FT', 'AET', 'PEN')
-    is_upcoming = status_short in ('NS', 'TBD')
+    # Goals from result
+    hg = result.get('home')
+    ag = result.get('away')
     
-    # Get kickoff time
-    ko_str = fixture.get('date', '')
-    ko     = parse_utc(ko_str)
+    # Map statuses
+    is_live     = status_short in ('1H','HT','2H','ET','BT','P','LIVE','IN_PLAY','inprogress','1','2') or                   'progress' in status_long.lower() or 'half' in status_long.lower()
+    is_finished = status_short in ('FT','AET','PEN','finished','ft','FINISHED','3') or                   'finish' in status_long.lower() or result.get('winner') in ('home','away','draw')
+    is_upcoming = not is_live and not is_finished
     
-    # Get round/stage
-    league = fx.get('league', {})
-    round_ = league.get('round', 'Group Stage')
+    # Kickoff time
+    ko_str = fx.get('date_time') or fx.get('date') or fx.get('kickoff') or ''
+    ko     = parse_utc(ko_str) if ko_str else None
+    
+    # Stage/round
+    round_ = fx.get('round') or fx.get('stage') or fx.get('group') or 'Group Stage'
+    if isinstance(round_, dict):
+        round_ = round_.get('name', 'Group Stage')
     
     return {
-        'fixture_id': fixture.get('id'),
+        'fixture_id': fx.get('mid') or fx.get('id'),
         'home':       home_code,
         'away':       away_code,
         'home_name':  home_name,
         'away_name':  away_name,
-        'hg':         hg if hg is not None else 0,
-        'ag':         ag if ag is not None else 0,
-        'minute':     int(elapsed),
+        'hg':         int(hg) if hg is not None else 0,
+        'ag':         int(ag) if ag is not None else 0,
+        'minute':     int(elapsed) if elapsed else 0,
         'status':     status_short,
-        'stage':      round_,
+        'stage':      str(round_),
         'date':       ko_str[:10] if ko_str else '',
         'kickoff':    ko,
         'live':       is_live,
