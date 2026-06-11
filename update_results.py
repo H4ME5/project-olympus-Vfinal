@@ -50,6 +50,18 @@ def api_get(path):
                     print(f"  First item keys: {list(parsed[0].keys())[:8]}")
                 elif parsed:
                     print(f"  First item type: {type(parsed[0]).__name__} = {str(parsed[0])[:100]}")
+        # Show what's inside response key
+        if isinstance(parsed, dict) and 'response' in parsed:
+            r = parsed['response']
+            print(f"  response type: {type(r).__name__}")
+            if isinstance(r, list):
+                print(f"  response length: {len(r)}")
+                if r: print(f"  response[0]: {json.dumps(r[0], default=str)[:400]}")
+            elif isinstance(r, dict):
+                print(f"  response keys: {list(r.keys())[:10]}")
+                # Check one level deeper
+                for k,v in r.items():
+                    print(f"    {k}: {type(v).__name__} = {str(v)[:100]}")
         return parsed
     except Exception as e:
         print(f"API error {path}: {e}")
