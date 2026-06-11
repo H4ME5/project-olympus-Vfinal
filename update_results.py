@@ -125,18 +125,29 @@ def fetch_fixtures():
         data = api_get(f'/competition_matches_list?date={fetch_date}&timezone=UTC')
         if not data:
             continue
-        # Handle different response structures
-        if isinstance(data, list):
+        # Structure: data -> response -> items -> list of matches
+        if isinstance(data, dict):
+            response = data.get('response', {})
+            if isinstance(response, dict):
+                matches = response.get('items', [])
+            elif isinstance(response, list):
+                matches = response
+            else:
+                matches = []
+        elif isinstance(data, list):
             matches = data
-        elif isinstance(data, dict):
-            matches = data.get('matches', data.get('data', data.get('response', data.get('results', []))))
         else:
             matches = []
-        # Only keep dict objects (actual match records)
+        
+        # Only keep FIFA World Cup matches (cid 1382)
         for m in matches:
             if not isinstance(m, dict):
                 continue
-            mid = m.get('id') or m.get('fixture_id') or m.get('match_id') or id(m)
+            # Filter to WC only if cid is present
+            cid = str(m.get('cid', ''))
+            if cid and cid != '1382':
+                continue
+            mid = m.get('mid') or m.get('id') or m.get('match_id') or m.get('fixture_id') or id(m)
             if mid not in seen_ids:
                 seen_ids.add(mid)
                 all_matches.append(m)
@@ -144,8 +155,8 @@ def fetch_fixtures():
     print(f"  Fetched {len(all_matches)} total matches across {len(dates_to_fetch)} dates")
     # Debug: print first match structure
     if all_matches:
-        print(f"  Sample match keys: {list(all_matches[0].keys())[:10]}")
-        print(f"  Sample match: {json.dumps(all_matches[0], default=str)[:300]}")
+        print(f"  Sample match keys: {list(all_matches[0].keys())}")
+        print(f"  Sample match: {json.dumps(all_matches[0], default=str)[:500]}")
     return all_matches
 
 # ── Parse fixture into our format ────────────────────────────────────
