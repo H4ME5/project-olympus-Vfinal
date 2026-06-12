@@ -2,7 +2,7 @@ name: Live Tournament Update
  
 on:
   schedule:
-    - cron: '* * * * *'
+    - cron: '*/2 * * * *'
   workflow_dispatch:
  
 jobs:
