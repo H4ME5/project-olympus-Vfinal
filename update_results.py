@@ -124,10 +124,18 @@ def parse_fixture(fx):
 
     # Status codes: "0"=upcoming, "1"=live, "2"=finished, "3"=postponed
     is_finished = status == '2' or winner in ('home', 'away', 'draw')
-    is_live     = status == '1' and not is_finished
+    # Only live if status=1 AND kickoff time is in the past
+    ko_check = parse_utc(fx.get('datestart') or fx.get('date_time') or fx.get('date') or '')
+    kickoff_passed = ko_check is not None and ko_check <= datetime.now(timezone.utc)
+    is_live     = status == '1' and not is_finished and kickoff_passed
     is_upcoming = not is_finished and not is_live
 
-    minute  = fx.get('time') or fx.get('elapsed') or 0
+    # Get current match minute
+    raw_time = fx.get('elapsed') or fx.get('time') or 0
+    try:
+        minute = int(str(raw_time).split('+')[0]) if raw_time else 0
+    except:
+        minute = 0
     ko_str  = fx.get('datestart') or fx.get('date_time') or fx.get('date') or ''
     ko      = parse_utc(ko_str)
     round_  = str(fx.get('round') or fx.get('stage') or 'Group Stage')
