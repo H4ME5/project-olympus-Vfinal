@@ -612,7 +612,7 @@ document.getElementById("gen-date").textContent=dt.toLocaleDateString("en-GB",{d
 // ── LIVE PREDICTIONS ──────────────────────────────────────────────
 var GITHUB_USER = 'H4ME5';
 var GITHUB_REPO = 'project-olympus-Vfinal';
-var LIVE_URL = 'https://cdn.jsdelivr.net/gh/H4ME5/project-olympus-Vfinal@main/olympus_live.json';
+var LIVE_URL = 'https://raw.githubusercontent.com/'+GITHUB_USER+'/'+GITHUB_REPO+'/main/olympus_live.json';
 var LIVE = null;
 var pollTimer = null;
 var countdownTimer = null;
@@ -631,7 +631,7 @@ function pollInterval(live){
 
 function loadLive(){
   var url = LIVE_URL + '?t='+Date.now();
-  fetch(url)
+  fetch(url, {cache: 'no-store', headers: {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}})
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(data){
       LIVE = data;
