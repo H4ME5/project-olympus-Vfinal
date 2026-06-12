@@ -25,7 +25,7 @@ jobs:
       - name: Run live updater
         id: updater
         env:
-          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          APIFOOTBALL_KEY: ${{ secrets.APIFOOTBALL_KEY }}
         run: |
           python update_results.py
           if [ -f olympus_live.json ]; then
