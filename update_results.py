@@ -71,6 +71,14 @@ NAME_MAP = {
     'Qatar':'QAT','Saudi Arabia':'KSA','Cape Verde':'CPV',
     'Tunisia':'TUN','New Zealand':'NZL','Curacao':'CUW',
     'Curaçao':'CUW','Haiti':'HAI',
+    'Cape Verde Islands':'CPV','Cape Verde':'CPV',
+    'Türkiye':'TUR','Turkiye':'TUR','Turkey':'TUR',
+    'United States':'USA','USA':'USA',
+    'Paraguay':'PAR','Australia':'AUS',
+    'Bosnia & Herzegovina':'BIH','Bosnia and Herzegovina':'BIH',
+    'Korea Republic':'KOR','South Korea':'KOR',
+    'IR Iran':'IRN','Iran':'IRN',
+    'Ivory Coast':'CIV',"Cote d'Ivoire":'CIV',"Côte d'Ivoire":'CIV',
 }
 def name_to_code(name):
     if not name: return None
@@ -146,7 +154,7 @@ def parse_fixture(fx):
         'minute':     int(elapsed) if elapsed else 0,
         'status':     status_short,
         'stage':      str(round_),
-        'date':       ko_str[:10] if ko_str else '',
+        'date':       ko_str[:16].replace('T',' ') if ko_str else '',
         'kickoff':    ko,
         'live':       is_live,
         'finished':   is_finished,
@@ -296,7 +304,7 @@ def format_fixture(fx):
     now = datetime.now(timezone.utc)
     mins = round((fx['kickoff']-now).total_seconds()/60) if fx['kickoff'] else 9999
     return {'home':fx['home'],'away':fx['away'],
-            'date':fx['date']+' UTC','stage':fx['stage'],'mins_until':mins}
+            'date':fx['date'],'stage':fx['stage'],'mins_until':mins}
  
 # ── Main ──────────────────────────────────────────────────────────────
 def main():
