@@ -707,7 +707,7 @@ function renderLive(){
     startCountdown(koDate, 'ko-countdown');
   } else {
     bar.className='live-bar pre';
-    var upd = meta.last_updated ? new Date(meta.last_updated).toLocaleString('en-GB') : '';
+    try { var upd = meta.last_updated ? new Date(meta.last_updated).toLocaleString('en-US',{timeZone:'America/Chicago',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true})+' CT' : ''; } catch(e){ var upd = ''; }
     txt.textContent='Last updated '+upd;
   }
 
