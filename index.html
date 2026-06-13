@@ -474,6 +474,14 @@ var FLAGS={
 };
 function flag(code){return FLAGS[code]||"";}
 var CC={UEFA:"#1a3a5c",CONMEBOL:"#1a6b1a",CAF:"#8b4513",AFC:"#8b1a1a",CONCACAF:"#1a5a6b",OFC:"#4a1a8b"};
+function toCT(dateStr){
+  if(!dateStr) return '';
+  try {
+    var d = new Date(dateStr.replace(' ','T')+'Z');
+    if(isNaN(d)) return dateStr;
+    return d.toLocaleString('en-US',{timeZone:'America/Chicago',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true})+' CT';
+  } catch(e){ return dateStr; }
+}
 function tn(c){return D.teams[c]?D.teams[c].name:c;}
 function show(id,btn){
   document.querySelectorAll(".sec").forEach(function(s){s.classList.remove("active");});
@@ -844,8 +852,7 @@ function renderLive(){
       var aname=D.teams[fx.away]?D.teams[fx.away].name:fx.away;
       html+='<div class="fixture-card">';
       html+='<div class="fx-teams">'+flag(fx.home)+' '+hname+'<span class="fx-vs">vs</span>'+aname+' '+flag(fx.away)+'</div>';
-      html+='<div class="fx-date">'+fx.date+(fx.stage?' · '+fx.stage.replace(/_/g,' '):'')+'</div>';
-      html+='</div>';
+      html+='<div class="fx-date">'+toCT(fx.date)+(fx.stage?' · '+fx.stage.replace(/_/g,' '):'')+'</div>';
       shown++;
     }
     html+='</div>';
