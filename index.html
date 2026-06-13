@@ -634,7 +634,7 @@ function pollInterval(live){
   var minsUntil = nextKo ? (nextKo - Date.now())/60000 : 999;
   if(liveNow || minsUntil < 10) return 60*1000;   // match on or starting soon: 1 min
   if(minsUntil < 60) return 2*60*1000;             // match within the hour: 2 min
-  return 10*60*1000;                               // nothing soon: 10 min
+  return 60*1000;                                  // always poll every 60 seconds
 }
 
 function loadLive(){
