@@ -853,6 +853,7 @@ function renderLive(){
       html+='<div class="fixture-card">';
       html+='<div class="fx-teams">'+flag(fx.home)+' '+hname+'<span class="fx-vs">vs</span>'+aname+' '+flag(fx.away)+'</div>';
       html+='<div class="fx-date">'+toCT(fx.date)+(fx.stage?' · '+fx.stage.replace(/_/g,' '):'')+'</div>';
+      html+='</div>';
       shown++;
     }
     html+='</div>';
