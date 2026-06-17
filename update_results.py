@@ -163,12 +163,15 @@ def fetch_player_stats(page=1):
 def fetch_all_player_stats():
     """Fetch all player stats across all pages."""
     all_players = []
-    # Fetch top scorers first using the topscorers endpoint
-    # Then supplement with general player stats
     for page in range(1, 16):  # up to 300 players
         data = api_get(f'/players?league={WC_ID}&season={SEASON}&page={page}')
         if not data or not isinstance(data, list):
-            break
+            # FIX: retry once on timeout instead of breaking
+            print(f'  Retrying page {page}...')
+            data = api_get(f'/players?league={WC_ID}&season={SEASON}&page={page}')
+            if not data or not isinstance(data, list):
+                print(f'  Page {page} failed twice — skipping (continuing to next page)')
+                continue  # FIX: continue not break, so we don't miss later pages
         if len(data) == 0:
             break
         for item in data:
@@ -198,7 +201,6 @@ def fetch_all_player_stats():
             pass_acc      = passes.get('accuracy') or 0
             dribbles_succ = dribbles.get('success') or 0
 
-            # Only include players who have actually played
             if appearances == 0:
                 continue
 
@@ -226,16 +228,6 @@ def fetch_all_player_stats():
 
 # ── Parse v3 fixture ──────────────────────────────────────────────────
 def parse_fixture(fx):
-    """
-    v3 fixture structure:
-    {
-      fixture: { id, date, status: { short, elapsed } },
-      league:  { round },
-      teams:   { home: { name }, away: { name } },
-      goals:   { home, away },
-      score:   { fulltime: { home, away } }
-    }
-    """
     fixture = fx.get('fixture', {})
     teams   = fx.get('teams', {})
     goals   = fx.get('goals', {})
@@ -248,10 +240,9 @@ def parse_fixture(fx):
     home_code = name_to_code(home_name)
     away_code = name_to_code(away_name)
 
-    status_short = status.get('short', '')   # NS, 1H, HT, 2H, ET, FT, AET, PEN, PST
+    status_short = status.get('short', '')
     elapsed      = status.get('elapsed') or 0
 
-    # Goals: use fulltime score for finished, current goals for live
     ft = score.get('fulltime', {})
     hg = goals.get('home')
     ag = goals.get('away')
@@ -265,7 +256,6 @@ def parse_fixture(fx):
     ko_str = fixture.get('date', '')
     ko     = parse_utc(ko_str)
 
-    # Fallback: if kickoff was more than 3 hours ago and still showing live, force finished
     if not is_finished and ko:
         age_hours = (datetime.now(timezone.utc) - ko).total_seconds() / 3600
         if age_hours > 3:
@@ -352,12 +342,9 @@ def get_lambdas(home, away, teams):
     return max(0.1, BASE_GOALS*h_att/max(a_def,0.1)), max(0.1, BASE_GOALS*a_att/max(h_def,0.1))
 
 def predict_match(home, away, base_teams):
-    """Compute pre-tournament win/draw/loss probability and expected goals
-    for any matchup using the base team scores."""
     if home not in base_teams or away not in base_teams:
         return None
     lh, la = get_lambdas(home, away, base_teams)
-    # Simulate 50,000 matches
     N = 50000
     hg = np.random.poisson(lh, N)
     ag = np.random.poisson(la, N)
@@ -373,7 +360,6 @@ def predict_match(home, away, base_teams):
     }
 
 def add_predictions_to_results(results, base_teams):
-    """Add pre-tournament model prediction to each completed result."""
     enriched = []
     for r in results:
         r2 = dict(r)
@@ -483,7 +469,6 @@ def main():
         print('No fixtures returned — aborting')
         sys.exit(0)
 
-    # Parse all fixtures
     fixtures = []
     unmapped = []
     for fx in raw:
@@ -505,7 +490,6 @@ def main():
 
     print(f'  Parsed: {len(fixtures)} | Finished: {len(finished)} | Live: {len(live_now)} | Upcoming: {len(upcoming)}')
 
-    # Print all results for verification
     if finished:
         print('  Results so far:')
         for fx in finished:
@@ -542,7 +526,6 @@ def main():
         print(f"  In-play: {hn} {lp['hg']}-{lp['ag']} {an} @ {lp['minute']}' "
               f"-> H:{p['home_win']}% D:{p['draw']}% A:{p['away_win']}%")
 
-    # Add pre-tournament predictions to all results
     enriched_results = add_predictions_to_results(
         [format_result(fx) for fx in finished[-30:]], BASE['teams']
     )
@@ -551,7 +534,6 @@ def main():
     print('Fetching player stats...')
     player_stats = fetch_all_player_stats()
 
-    # Also fetch top scorers specifically to make sure we don't miss them
     top_scorers_data = api_get(f'/players/topscorers?league={WC_ID}&season={SEASON}')
     if top_scorers_data and isinstance(top_scorers_data, list):
         existing_ids = {p['id'] for p in player_stats}
@@ -600,18 +582,23 @@ def main():
     all_events = []
     lineups_by_fixture = {}
 
-    # Fetch events and lineups for recent finished matches + live matches
-    target_fixtures = list(finished[-6:]) + list(live_now)
-    for fx in target_fixtures:
+    # FIX: fetch events for ALL finished matches so tournament_goals is complete
+    print(f'  Fetching events for all {len(finished)} finished matches + {len(live_now)} live...')
+    for fx in finished + live_now:
         fid = fx.get('fixture_id')
         if not fid:
             continue
         events = fetch_match_events(fid)
         all_events.extend(events)
+
+    # Lineups only for recent matches (expensive — 2 API calls each)
+    for fx in list(finished[-6:]) + list(live_now):
+        fid = fx.get('fixture_id')
+        if not fid:
+            continue
         lu = fetch_lineups(fid)
         if lu:
             key = f"{fx['home']}_{fx['away']}"
-            # Attach goal info to players
             lineups_by_fixture[key] = {
                 'home': fx['home'],
                 'away': fx['away'],
@@ -621,7 +608,7 @@ def main():
                 'date':  fx['date'],
                 'live':  fx.get('live', False),
                 'lineups': lu,
-                'events':  events,
+                'events':  [e for e in all_events if True],  # events already collected above
                 'fixture_id': fid,
             }
 
@@ -644,7 +631,6 @@ def main():
         'groups':  BASE['groups'],
         'ranked':  sorted(
             [{'code':c,
-              # Scale win% by ratio of updated score to original score
               'win':  round(t.get('winner',0) * (t['score'] / max(BASE['teams'][c]['score'], 0.1)), 2),
               'final':round(t.get('final',0)  * (t['score'] / max(BASE['teams'][c]['score'], 0.1)), 2),
               'sf':   round(t.get('sf',0)     * (t['score'] / max(BASE['teams'][c]['score'], 0.1)), 2),
