@@ -163,10 +163,9 @@ def fetch_player_stats(page=1):
 def fetch_all_player_stats():
     """Fetch all player stats across all pages."""
     all_players = []
-    # API-Football paginates at 20 players per page
-    # WC has 48*26=1248 players but we only need those who have played
-    # Fetch first 5 pages (100 players) to cover key contributors
-    for page in range(1, 6):
+    # Fetch top scorers first using the topscorers endpoint
+    # Then supplement with general player stats
+    for page in range(1, 16):  # up to 300 players
         data = api_get(f'/players?league={WC_ID}&season={SEASON}&page={page}')
         if not data or not isinstance(data, list):
             break
@@ -551,6 +550,49 @@ def main():
     # ── Fetch player stats ───────────────────────────────────────────
     print('Fetching player stats...')
     player_stats = fetch_all_player_stats()
+
+    # Also fetch top scorers specifically to make sure we don't miss them
+    top_scorers_data = api_get(f'/players/topscorers?league={WC_ID}&season={SEASON}')
+    if top_scorers_data and isinstance(top_scorers_data, list):
+        existing_ids = {p['id'] for p in player_stats}
+        for item in top_scorers_data:
+            player = item.get('player', {})
+            stats  = item.get('statistics', [{}])[0]
+            games  = stats.get('games', {})
+            goals  = stats.get('goals', {})
+            cards  = stats.get('cards', {})
+            passes = stats.get('passes', {})
+            shots  = stats.get('shots', {})
+            dribbles = stats.get('dribbles', {})
+            team_name = stats.get('team', {}).get('name', '')
+            team_code = name_to_code(team_name)
+            pid = player.get('id')
+            if pid in existing_ids:
+                continue
+            goals_scored = goals.get('total') or 0
+            if goals_scored == 0:
+                continue
+            player_stats.append({
+                'id':           pid,
+                'name':         player.get('name', ''),
+                'nationality':  player.get('nationality', ''),
+                'team_name':    team_name,
+                'team_code':    team_code,
+                'appearances':  games.get('appearences') or 0,
+                'minutes':      games.get('minutes') or 0,
+                'rating':       round(float(games.get('rating')), 1) if games.get('rating') else None,
+                'goals':        goals_scored,
+                'assists':      goals.get('assists') or 0,
+                'yellow_cards': cards.get('yellow') or 0,
+                'red_cards':    (cards.get('red') or 0) + (cards.get('yellowred') or 0),
+                'shots_total':  shots.get('total') or 0,
+                'shots_on':     shots.get('on') or 0,
+                'key_passes':   passes.get('key') or 0,
+                'pass_accuracy': passes.get('accuracy') or 0,
+                'dribbles':     dribbles.get('success') or 0,
+            })
+        print(f'  Added {len(top_scorers_data)} top scorers')
+
     print(f'  Players with stats: {len(player_stats)}')
 
     # ── Fetch lineups and tournament goal tallies ─────────────────────
