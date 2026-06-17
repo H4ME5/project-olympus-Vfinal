@@ -262,15 +262,16 @@ def parse_fixture(fx):
     is_finished = status_short in ('FT', 'AET', 'PEN', 'AWD', 'WO')
     is_live     = status_short in ('1H', 'HT', '2H', 'ET', 'BT', 'P', 'INT', 'LIVE')
     is_upcoming = status_short in ('NS', 'TBD', 'PST', 'CANC', 'ABD')
+ 
+    ko_str = fixture.get('date', '')
+    ko     = parse_utc(ko_str)
+ 
     # Fallback: if kickoff was more than 3 hours ago and still showing live, force finished
     if not is_finished and ko:
         age_hours = (datetime.now(timezone.utc) - ko).total_seconds() / 3600
         if age_hours > 3:
             is_finished = True
             is_live = False
- 
-    ko_str = fixture.get('date', '')
-    ko     = parse_utc(ko_str)
     round_ = league.get('round', 'Group Stage')
  
     return {
