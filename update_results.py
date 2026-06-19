@@ -883,19 +883,10 @@ def main():
     update, reason, next_ko = should_update(fixtures)
     print(f'  Should update: {update} -- {reason}')
 
-    if not update:
-        if not os.path.exists('olympus_live.json'):
-            status = {'meta':{
-                'last_checked':now.isoformat()+'Z',
-                'next_kickoff':next_ko.isoformat() if next_ko else None,
-                'phase':get_phase(fixtures),'live':False,'updating':False,'reason':reason,
-            }}
-            with open('olympus_live.json','w') as f:
-                json.dump(status,f,separators=(',',':'))
-            print('Wrote initial status file')
-        else:
-            print('No update needed -- skipping commit')
-        sys.exit(0)
+    # Always run simulation — just skip live API calls when no match active
+    skip_live_fetch = not update
+    if skip_live_fetch:
+        print('No live match — skipping live API calls, running simulation only')
 
     print('Running full update...')
     phase         = get_phase(fixtures)
