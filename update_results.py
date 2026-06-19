@@ -19,10 +19,11 @@ BASE_URL = 'https://' + API_HOST
 WC_ID    = 1
 SEASON   = 2026
  
-# Cache files (committed to repo alongside olympus_live.json)
+# Cache files
 CACHE_PLAYERS = 'cache_players.json'
 CACHE_EVENTS  = 'cache_events.json'
-PLAYER_CACHE_TTL_MINUTES = 60  # refresh player stats at most once per hour
+CACHE_LINEUPS = 'cache_lineups.json'   # NEW: permanent lineup cache
+PLAYER_CACHE_TTL_MINUTES = 60
  
 print('  API key present: ' + str(bool(API_KEY)) + ' | length: ' + str(len(API_KEY)))
  
@@ -120,7 +121,7 @@ def fetch_fixtures():
     print(f'  Raw fixtures returned: {len(data)}')
     return data
  
-# ── Fetch lineups & events ────────────────────────────────────────────
+# ── Fetch lineups (raw API call) ──────────────────────────────────────
 def fetch_lineups(fixture_id):
     data = api_get(f'/fixtures/lineups?fixture={fixture_id}')
     if not data or not isinstance(data, list):
@@ -145,7 +146,83 @@ def fetch_lineups(fixture_id):
             'players':   players,
         })
     return lineups
- 
+
+# ── Cached lineup fetcher ─────────────────────────────────────────────
+def get_lineups_cached(finished, live_now, all_fixtures_map):
+    """
+    Fetch lineups only once per finished fixture — cache permanently.
+    For live matches: fetch once at kickoff (when lineup confirmed), then cache.
+    Never re-fetch a lineup we already have.
+    tournament_goals is NOT stored here — it's attached at output time.
+    """
+    cache = load_cache(CACHE_LINEUPS)
+    # cache structure: { fixture_id_str: { home, away, hg, ag, stage, date, live, lineups } }
+
+    newly_fetched = 0
+
+    # Finished matches — fetch once, cache forever
+    for fx in finished:
+        fid = str(fx.get('fixture_id'))
+        if not fid or fid == 'None':
+            continue
+        if fid in cache:
+            # Update score in case it changed (shouldn't, but keep fresh)
+            cache[fid]['hg'] = fx['hg']
+            cache[fid]['ag'] = fx['ag']
+            cache[fid]['live'] = False
+            continue
+        lu = fetch_lineups(fx['fixture_id'])
+        if lu and len(lu) == 2 and any(len(t.get('players', [])) > 0 for t in lu):
+            cache[fid] = {
+                'home':       fx['home'],
+                'away':       fx['away'],
+                'hg':         fx['hg'],
+                'ag':         fx['ag'],
+                'stage':      fx['stage'],
+                'date':       fx['date'],
+                'live':       False,
+                'lineups':    lu,
+                'fixture_id': fx['fixture_id'],
+            }
+            newly_fetched += 1
+            print(f'  Lineup cached: {fx["home_name"]} vs {fx["away_name"]}')
+
+    # Live matches — fetch once when lineup is available, then cache
+    for fx in live_now:
+        fid = str(fx.get('fixture_id'))
+        if not fid or fid == 'None':
+            continue
+        if fid in cache:
+            # Already have it — just update live status and score
+            cache[fid]['hg'] = fx['hg']
+            cache[fid]['ag'] = fx['ag']
+            cache[fid]['live'] = True
+            continue
+        lu = fetch_lineups(fx['fixture_id'])
+        if lu and len(lu) == 2 and any(len(t.get('players', [])) > 0 for t in lu):
+            cache[fid] = {
+                'home':       fx['home'],
+                'away':       fx['away'],
+                'hg':         fx['hg'],
+                'ag':         fx['ag'],
+                'stage':      fx['stage'],
+                'date':       fx['date'],
+                'live':       True,
+                'lineups':    lu,
+                'fixture_id': fx['fixture_id'],
+            }
+            newly_fetched += 1
+            print(f'  Live lineup cached: {fx["home_name"]} vs {fx["away_name"]}')
+
+    if newly_fetched > 0:
+        save_cache(CACHE_LINEUPS, cache)
+        print(f'  Lineups: fetched {newly_fetched} new, {len(cache)} total cached')
+    else:
+        save_cache(CACHE_LINEUPS, cache)  # save score updates
+        print(f'  Lineups: all {len(cache)} from cache (0 API calls)')
+
+    return list(cache.values())
+
 def fetch_match_events(fixture_id):
     data = api_get(f'/fixtures/events?fixture={fixture_id}&type=Goal')
     if not data or not isinstance(data, list):
@@ -173,17 +250,10 @@ def build_tournament_goals(all_events):
  
 # ── Cached event fetcher ──────────────────────────────────────────────
 def get_all_events_cached(finished, live_now):
-    """
-    Fetch goal events for all fixtures, using cache for finished matches.
-    Only calls the API for fixture IDs we haven't seen before, or live matches.
-    """
     cache = load_cache(CACHE_EVENTS)
-    # cache structure: { fixture_id_str: [events...], ... }
- 
     all_events = []
     newly_fetched = 0
  
-    # Finished matches — cache permanently, never re-fetch
     for fx in finished:
         fid = str(fx.get('fixture_id'))
         if not fid or fid == 'None':
@@ -196,13 +266,12 @@ def get_all_events_cached(finished, live_now):
             all_events.extend(events)
             newly_fetched += 1
  
-    # Live matches — always re-fetch (score is changing)
     for fx in live_now:
         fid = str(fx.get('fixture_id'))
         if not fid or fid == 'None':
             continue
         events = fetch_match_events(fx['fixture_id'])
-        cache[fid] = events  # update cache with latest
+        cache[fid] = events
         all_events.extend(events)
         newly_fetched += 1
  
@@ -263,10 +332,6 @@ def parse_player_item(item):
     }
  
 def get_player_stats_cached():
-    """
-    Fetch player stats + top scorers at most once per hour.
-    Returns merged list of player stat dicts.
-    """
     cache = load_cache(CACHE_PLAYERS)
  
     if cache_is_fresh(cache, PLAYER_CACHE_TTL_MINUTES):
@@ -277,7 +342,6 @@ def get_player_stats_cached():
     print('  Player stats cache stale/missing — fetching from API...')
     all_players = []
  
-    # Paginated /players endpoint
     for page in range(1, 16):
         data = api_get(f'/players?league={WC_ID}&season={SEASON}&page={page}')
         if not data or not isinstance(data, list):
@@ -294,7 +358,6 @@ def get_player_stats_cached():
                 continue
             all_players.append(p)
  
-    # Top scorers endpoint — catches anyone missed by pagination
     top_scorers_data = api_get(f'/players/topscorers?league={WC_ID}&season={SEASON}')
     if top_scorers_data and isinstance(top_scorers_data, list):
         existing_ids = {p['id'] for p in all_players}
@@ -302,7 +365,6 @@ def get_player_stats_cached():
         for item in top_scorers_data:
             p = parse_player_item(item)
             if p['id'] in existing_ids:
-                # Update goals count if topscorers has higher value (more up to date)
                 for existing in all_players:
                     if existing['id'] == p['id'] and p['goals'] > existing['goals']:
                         existing['goals'] = p['goals']
@@ -316,7 +378,6 @@ def get_player_stats_cached():
  
     print(f'  Total players fetched: {len(all_players)}')
  
-    # Save to cache with timestamp
     save_cache(CACHE_PLAYERS, {
         '_timestamp': datetime.now(timezone.utc).isoformat(),
         'players': all_players,
@@ -326,12 +387,6 @@ def get_player_stats_cached():
  
 # ── Merge tournament_goals into player_stats ──────────────────────────
 def merge_goals_into_stats(player_stats, tournament_goals, all_events):
-    """
-    tournament_goals is built from match events and is always up to date.
-    Use it to patch goal counts in player_stats, and add missing players
-    (e.g. those in live matches not yet in the /players API).
-    """
-    # Build name lookup from events for players not in stats
     event_player_info = {}
     for ev in all_events:
         pid = ev.get('player_id')
@@ -342,7 +397,6 @@ def merge_goals_into_stats(player_stats, tournament_goals, all_events):
                 'team_code': name_to_code(ev.get('team_name', '')),
             }
  
-    # Patch existing players with event-sourced goal counts
     existing_ids = {}
     for p in player_stats:
         existing_ids[str(p['id'])] = p
@@ -350,9 +404,8 @@ def merge_goals_into_stats(player_stats, tournament_goals, all_events):
         if pid_str in tournament_goals:
             event_goals = tournament_goals[pid_str]
             if event_goals > p['goals']:
-                p['goals'] = event_goals  # trust events over stale API
+                p['goals'] = event_goals
  
-    # Add completely missing players (live match scorers)
     added = 0
     for pid_str, goal_count in tournament_goals.items():
         if pid_str not in existing_ids and goal_count > 0:
@@ -699,34 +752,15 @@ def main():
     tournament_goals = build_tournament_goals(all_events)
     print(f'  Tournament goals tracked: {len(tournament_goals)} players')
  
-    # Merge event-sourced goals into player_stats (fixes live match scorers)
+    # Merge event-sourced goals into player_stats
     player_stats = merge_goals_into_stats(player_stats, tournament_goals, all_events)
- 
-    # ── Lineups (recent + live only) ─────────────────────────────────
+
+    # ── Lineups (cached permanently per fixture, 0 API calls after first fetch) ──
     print('Fetching lineups...')
-    lineups_by_fixture = {}
-    for fx in list(finished[-6:]) + list(live_now):
-        fid = fx.get('fixture_id')
-        if not fid:
-            continue
-        lu = fetch_lineups(fid)
-        if lu:
-            key = f"{fx['home']}_{fx['away']}"
-            fx_events = [e for e in all_events]
-            lineups_by_fixture[key] = {
-                'home':       fx['home'],
-                'away':       fx['away'],
-                'hg':         fx['hg'],
-                'ag':         fx['ag'],
-                'stage':      fx['stage'],
-                'date':       fx['date'],
-                'live':       fx.get('live', False),
-                'lineups':    lu,
-                'events':     fx_events,
-                'fixture_id': fid,
-            }
- 
-    print(f'  Lineups fetched: {len(lineups_by_fixture)} matches')
+    # Build a map of fixture_id -> fixture for the cache function
+    all_fixtures_map = {str(fx['fixture_id']): fx for fx in fixtures if fx.get('fixture_id')}
+    lineups = get_lineups_cached(finished, live_now, all_fixtures_map)
+    print(f'  Lineups available: {len(lineups)} matches')
  
     output = {
         'meta': {
@@ -763,7 +797,7 @@ def main():
             'eliminated':       eliminated,
             'phase':            phase,
             'next_kickoff':     next_ko.isoformat() if next_ko else None,
-            'lineups':          list(lineups_by_fixture.values()),
+            'lineups':          lineups,
             'tournament_goals': tournament_goals,
             'player_stats':     player_stats,
         }
