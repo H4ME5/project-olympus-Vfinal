@@ -11,7 +11,7 @@
       "penalty_rec": "max \u00b12.0pts",
       "travel_burden": "max \u00b11.5pts"
     },
-    "generated": "2026-06-19T23:28:05.292918"
+    "generated": "2026-06-19T23:48:40.718059"
   },
   "teams": {
     "ESP": {
@@ -1985,10 +1985,10 @@
           "score": 18.98
         },
         {
-          "code": "CZE",
+          "code": "ZAF",
           "pos": 4,
           "pct": 0,
-          "score": 18.98
+          "score": 24.58
         }
       ],
       "B": [
@@ -2011,10 +2011,10 @@
           "score": 29.75
         },
         {
-          "code": "SUI",
+          "code": "QAT",
           "pos": 4,
           "pct": 0,
-          "score": 60.0
+          "score": 19.86
         }
       ],
       "C": [
@@ -2037,10 +2037,10 @@
           "score": 53.16
         },
         {
-          "code": "MAR",
+          "code": "HAI",
           "pos": 4,
           "pct": 0,
-          "score": 53.16
+          "score": 13.16
         }
       ],
       "D": [
@@ -2063,10 +2063,10 @@
           "score": 35.22
         },
         {
-          "code": "TUR",
+          "code": "AUS",
           "pos": 4,
           "pct": 0,
-          "score": 46.54
+          "score": 30.92
         }
       ],
       "E": [
@@ -2089,10 +2089,10 @@
           "score": 16.94
         },
         {
-          "code": "CUW",
+          "code": "ECU",
           "pos": 4,
           "pct": 0,
-          "score": 16.94
+          "score": 22.78
         }
       ],
       "F": [
@@ -2141,10 +2141,10 @@
           "score": 32.88
         },
         {
-          "code": "IRN",
+          "code": "NZL",
           "pos": 4,
           "pct": 0,
-          "score": 32.88
+          "score": 17.18
         }
       ],
       "H": [
@@ -2271,10 +2271,10 @@
           "score": 12.7
         },
         {
-          "code": "CRO",
+          "code": "PAN",
           "pos": 4,
           "pct": 0,
-          "score": 58.29
+          "score": 8.35
         }
       ]
     },
