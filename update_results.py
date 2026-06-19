@@ -883,11 +883,6 @@ def main():
     update, reason, next_ko = should_update(fixtures)
     print(f'  Should update: {update} -- {reason}')
 
-    # Always run simulation — just skip live API calls when no match active
-    skip_live_fetch = not update
-    if skip_live_fetch:
-        print('No live match — skipping live API calls, running simulation only')
-
     print('Running full update...')
     phase         = get_phase(fixtures)
     updated_teams = update_scores(BASE['teams'], finished)
