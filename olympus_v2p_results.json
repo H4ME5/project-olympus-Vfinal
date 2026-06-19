@@ -1,7 +1,7 @@
 {
   "meta": {
     "n_sims": 50000,
-    "version": "V2 Patched Final \u2014 corrected June 2 rosters + bracket",
+    "version": "V2 Patched Final \u2014 corrected June 2 rosters + correct FIFA bracket",
     "model": "P1=28% P2=34% P3=13% P4=25% + 6 modifiers",
     "modifiers": {
       "age_curve": "max \u00b14.0pts",
@@ -11,7 +11,7 @@
       "penalty_rec": "max \u00b12.0pts",
       "travel_burden": "max \u00b11.5pts"
     },
-    "generated": "2026-06-19T22:59:48.910693"
+    "generated": "2026-06-19T23:28:05.292918"
   },
   "teams": {
     "ESP": {
@@ -2295,14 +2295,14 @@
         "score": 38.4
       },
       "B4": {
-        "code": "ALG",
-        "pct": 10.4,
-        "score": 38.4
+        "code": "SEN",
+        "pct": 10.3,
+        "score": 46.77
       },
       "B5": {
-        "code": "MAR",
-        "pct": 12.7,
-        "score": 53.16
+        "code": "SCO",
+        "pct": 10.9,
+        "score": 46.74
       },
       "B6": {
         "code": "COL",
@@ -2310,9 +2310,9 @@
         "score": 42.8
       },
       "B7": {
-        "code": "IRN",
-        "pct": 16.6,
-        "score": 32.88
+        "code": "EGY",
+        "pct": 11.7,
+        "score": 35.98
       },
       "B8": {
         "code": "GHA",
@@ -2402,14 +2402,14 @@
       {
         "slot": "R32_7",
         "home": "USA",
-        "away": "ALG",
+        "away": "SEN",
         "winner": "USA",
         "home_slot": "1D",
         "away_slot": "B4",
         "winner_pct": 41.8,
         "avg_goals": {
-          "h": 2.3,
-          "a": 1.3
+          "h": 2.0,
+          "a": 1.4
         }
       },
       {
@@ -2454,13 +2454,13 @@
       {
         "slot": "R32_11",
         "home": "KOR",
-        "away": "MAR",
+        "away": "SCO",
         "winner": "KOR",
         "home_slot": "1A",
         "away_slot": "B5",
         "winner_pct": 32.1,
         "avg_goals": {
-          "h": 1.7,
+          "h": 1.6,
           "a": 2.1
         }
       },
@@ -2506,14 +2506,14 @@
       {
         "slot": "R32_15",
         "home": "SUI",
-        "away": "IRN",
+        "away": "EGY",
         "winner": "SUI",
         "home_slot": "1B",
         "away_slot": "B7",
         "winner_pct": 67.8,
         "avg_goals": {
-          "h": 2.5,
-          "a": 1.0
+          "h": 2.2,
+          "a": 1.2
         }
       },
       {
