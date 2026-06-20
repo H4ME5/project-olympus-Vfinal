@@ -22,10 +22,12 @@ jobs:
           APIFOOTBALL_KEY: ${{ secrets.APIFOOTBALL_KEY }}
         run: |
           python update_results.py
+      - name: Generate content ideas
+        run: python content_generator.py
       - name: Commit results
         run: |
           git config user.name  "Olympus Bot"
           git config user.email "bot@projectolympus"
-          git add olympus_live.json cache_players.json cache_events.json cache_lineups.json
+          git add olympus_live.json cache_players.json cache_events.json cache_lineups.json content_ideas.md
           git diff --staged --quiet || git commit -m "Live update $(date -u '+%H:%M:%S UTC')"
           git push
