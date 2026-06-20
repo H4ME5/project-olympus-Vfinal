@@ -555,49 +555,97 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         t2 = {'code': sorted_teams[1][0], 'pct': round(sorted_teams[1][1]/N*100,1)} if len(sorted_teams) > 1 else None
         return t1, t2
 
-    # ── Build live bracket ─────────────────────────────────────────
-    # R32: show top 2 teams that appeared (one is the slot team, one is their opponent)
+    # ── Build live bracket — deterministic chain ──────────────────
+    # Each card's teams come from the winner of the previous card.
+    # Win% shown = head-to-head probability between those two specific teams.
+
+    def h2h_pct(code_a, code_b, teams_dict):
+        """Compute head-to-head win% for code_a vs code_b using the model."""
+        if not code_a or not code_b: return 50.0
+        if code_a not in teams_dict or code_b not in teams_dict: return 50.0
+        lh, la = get_lambdas(code_a, code_b, teams_dict)
+        # Quick Poisson approximation
+        from collections import defaultdict as _dd
+        hw = 0.0; dw = 0.0; aw = 0.0
+        import math
+        def pmf(k, lam):
+            return math.exp(-lam) * (lam**k) / math.factorial(k)
+        for g in range(8):
+            for ga in range(8):
+                p = pmf(g, lh) * pmf(ga, la)
+                if g > ga: hw += p
+                elif g == ga: dw += p
+                else: aw += p
+        tot = hw + dw + aw
+        return round(hw / tot * 100, 1) if tot > 0 else 50.0
+
+    def make_card(slot_name, h_code, a_code, teams_dict):
+        """Build a bracket card with H2H win% and determine winner."""
+        if not h_code and not a_code:
+            return {'slot': slot_name, 'home': None, 'away': None, 'winner': None}
+        if not h_code:
+            return {'slot': slot_name, 'home': None,
+                    'away': {'code': a_code, 'pct': 100.0},
+                    'winner': {'code': a_code, 'pct': 100.0}}
+        if not a_code:
+            return {'slot': slot_name,
+                    'home': {'code': h_code, 'pct': 100.0},
+                    'away': None, 'winner': {'code': h_code, 'pct': 100.0}}
+        h_pct = h2h_pct(h_code, a_code, teams_dict)
+        a_pct = round(100.0 - h_pct, 1)
+        winner_code = h_code if h_pct >= 50.0 else a_code
+        winner_pct  = h_pct if h_pct >= 50.0 else a_pct
+        return {
+            'slot': slot_name,
+            'home': {'code': h_code, 'pct': h_pct},
+            'away': {'code': a_code, 'pct': a_pct},
+            'winner': {'code': winner_code, 'pct': round(winner_pct, 1)},
+        }
+
+    # R32: top 2 most frequent teams per slot (appearance-based, unchanged)
     r32_cards = []
     for i in range(16):
         h, a = top2_appearances(r32_slot_wins, i)
-        w = top_winner(r32_winner_counts[i])
-        r32_cards.append({'slot': f'R32_{i+1}', 'home': h, 'away': a, 'winner': w})
+        h_code = h['code'] if h else None
+        a_code = a['code'] if a else None
+        card = make_card(f'R32_{i+1}', h_code, a_code, updated_teams)
+        # Keep appearance pct for R32 display
+        if h: card['home']['pct'] = h['pct']
+        if a: card['away']['pct'] = a['pct']
+        r32_cards.append(card)
 
-    # R16: home = most frequent winner of R32[i*2], away = most frequent winner of R32[i*2+1]
+    # R16: winner of R32[2i] vs winner of R32[2i+1] — deterministic chain
     r16_cards = []
     for i in range(8):
-        h = top_winner(r32_winner_counts[i*2])
-        a = top_winner(r32_winner_counts[i*2+1])
-        w = top_winner(r16_winner_counts[i])
-        r16_cards.append({'slot': f'R16_{i+1}', 'home': h, 'away': a, 'winner': w})
+        h_code = r32_cards[i*2]['winner']['code']   if r32_cards[i*2].get('winner')   else None
+        a_code = r32_cards[i*2+1]['winner']['code'] if r32_cards[i*2+1].get('winner') else None
+        r16_cards.append(make_card(f'R16_{i+1}', h_code, a_code, updated_teams))
 
-    # QF: home = most frequent winner of R16[i*2], away = most frequent winner of R16[i*2+1]
+    # QF: winner of R16[2i] vs winner of R16[2i+1]
     qf_cards = []
     for i in range(4):
-        h = top_winner(r16_winner_counts[i*2])
-        a = top_winner(r16_winner_counts[i*2+1])
-        w = top_winner(qf_winner_counts[i])
-        qf_cards.append({'slot': f'QF_{i+1}', 'home': h, 'away': a, 'winner': w})
+        h_code = r16_cards[i*2]['winner']['code']   if r16_cards[i*2].get('winner')   else None
+        a_code = r16_cards[i*2+1]['winner']['code'] if r16_cards[i*2+1].get('winner') else None
+        qf_cards.append(make_card(f'QF_{i+1}', h_code, a_code, updated_teams))
 
-    # SF: home = most frequent winner of QF[i*2], away = most frequent winner of QF[i*2+1]
+    # SF: winner of QF[2i] vs winner of QF[2i+1]
     sf_cards = []
     for i in range(2):
-        h = top_winner(qf_winner_counts[i*2])
-        a = top_winner(qf_winner_counts[i*2+1])
-        w = top_winner(sf_winner_counts[i])
-        sf_cards.append({'slot': f'SF_{i+1}', 'home': h, 'away': a, 'winner': w})
+        h_code = qf_cards[i*2]['winner']['code']   if qf_cards[i*2].get('winner')   else None
+        a_code = qf_cards[i*2+1]['winner']['code'] if qf_cards[i*2+1].get('winner') else None
+        sf_cards.append(make_card(f'SF_{i+1}', h_code, a_code, updated_teams))
 
-    # Final: home = most frequent SF[0] winner, away = most frequent SF[1] winner
-    final_home = top_winner(sf_winner_counts[0])
-    final_away = top_winner(sf_winner_counts[1])
-    final_winner = top_winner(final_winner_counts) if final_winner_counts else None
+    # Final: winner of SF[0] vs winner of SF[1]
+    final_h = sf_cards[0]['winner']['code'] if sf_cards[0].get('winner') else None
+    final_a = sf_cards[1]['winner']['code'] if sf_cards[1].get('winner') else None
+    final_card = make_card('Final', final_h, final_a, updated_teams)
 
     live_bracket = {
         'r32':   r32_cards,
         'r16':   r16_cards,
         'qf':    qf_cards,
         'sf':    sf_cards,
-        'final': {'home': final_home, 'away': final_away, 'winner': final_winner},
+        'final': final_card,
     }
 
     return results, live_bracket
