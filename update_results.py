@@ -432,14 +432,18 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
     sfs  = defaultdict(int); qfs    = defaultdict(int)
     r16s = defaultdict(int); advs   = defaultdict(int)
 
-    # Appearance tracking (for % display in R32 cards)
-    r32_slot_wins   = defaultdict(lambda: defaultdict(int))
-    # Winner tracking (for feeding correct teams into next round display)
+    # Appearance tracking per slot (for R32 non-B slots)
+    r32_slot_appearances = defaultdict(lambda: defaultdict(int))
+    # Winner tracking per slot (for deterministic chain)
     r32_winner_counts = defaultdict(lambda: defaultdict(int))
     r16_winner_counts = defaultdict(lambda: defaultdict(int))
     qf_winner_counts  = defaultdict(lambda: defaultdict(int))
     sf_winner_counts  = defaultdict(lambda: defaultdict(int))
     final_winner_counts = defaultdict(int)
+
+    # ── NEW: track most likely 3rd-place team per group ──────────────
+    # third_place_counts[grp][code] = number of sims where code finished 3rd in grp
+    third_place_counts = defaultdict(lambda: defaultdict(int))
 
     for _ in range(N):
         # ── Group stage ────────────────────────────────────────────
@@ -448,9 +452,11 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             codes = [t['code'] for t in teams]
             standing = simulate_group(codes, updated_teams, group_results[grp])
             group_standings[grp] = standing
+            third_code = standing[2]
+            third_place_counts[grp][third_code] += 1
             all_thirds.append({
-                'code': standing[2], 'grp': grp,
-                'score': updated_teams.get(standing[2], {}).get('score', 0),
+                'code': third_code, 'grp': grp,
+                'score': updated_teams.get(third_code, {}).get('score', 0),
             })
 
         b8 = sorted(all_thirds, key=lambda t: -t['score'])[:8]
@@ -474,10 +480,10 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             a = slot_map.get(slot['away_slot'])
             if not h or not a or h not in updated_teams or a not in updated_teams:
                 w = h or a; r32_winners.append(w)
-                if w: r32_slot_wins[si][w] += 1; r32_winner_counts[si][w] += 1
+                if w: r32_slot_appearances[si][w] += 1; r32_winner_counts[si][w] += 1
                 continue
             r16s[h] += 1; r16s[a] += 1
-            r32_slot_wins[si][h] += 1; r32_slot_wins[si][a] += 1
+            r32_slot_appearances[si][h] += 1; r32_slot_appearances[si][a] += 1
             winner = sim_match(h, a, updated_teams)
             r32_winners.append(winner)
             r32_winner_counts[si][winner] += 1
@@ -547,7 +553,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         return {'code': w, 'pct': round(d[w] / N * 100, 1)}
 
     def top2_appearances(slot_dict, slot_idx):
-        """Top 2 teams that appeared in a slot (for R32 cards only)."""
+        """Top 2 teams that appeared in a slot (for R32 non-B cards)."""
         d = slot_dict[slot_idx]
         if not d: return None, None
         sorted_teams = sorted(d.items(), key=lambda x: -x[1])
@@ -555,21 +561,15 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         t2 = {'code': sorted_teams[1][0], 'pct': round(sorted_teams[1][1]/N*100,1)} if len(sorted_teams) > 1 else None
         return t1, t2
 
-    # ── Build live bracket — deterministic chain ──────────────────
-    # Each card's teams come from the winner of the previous card.
-    # Win% shown = head-to-head probability between those two specific teams.
-
     def h2h_pct(code_a, code_b, teams_dict):
         """Compute head-to-head win% for code_a vs code_b using the model."""
         if not code_a or not code_b: return 50.0
         if code_a not in teams_dict or code_b not in teams_dict: return 50.0
         lh, la = get_lambdas(code_a, code_b, teams_dict)
-        # Quick Poisson approximation
-        from collections import defaultdict as _dd
-        hw = 0.0; dw = 0.0; aw = 0.0
         import math
         def pmf(k, lam):
             return math.exp(-lam) * (lam**k) / math.factorial(k)
+        hw = 0.0; dw = 0.0; aw = 0.0
         for g in range(8):
             for ga in range(8):
                 p = pmf(g, lh) * pmf(ga, la)
@@ -602,16 +602,96 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             'winner': {'code': winner_code, 'pct': round(winner_pct, 1)},
         }
 
-    # R32: top 2 most frequent teams per slot (appearance-based, unchanged)
+    # ── Resolve most likely team per slot for R32 display ────────────
+    #
+    # FIX: B-slots (third-place slots) must use the most likely actual
+    # 3rd-place team from each eligible group, NOT raw slot appearance
+    # counts. Raw appearances were incorrectly promoting teams whose
+    # modal position is 1st or 2nd (e.g. URU showing as a third-placer
+    # despite 61% chance of finishing 2nd in Group H).
+    #
+    # For each B-slot, we:
+    #   1. Find the eligible groups per Annex C
+    #   2. For each eligible group, find the most likely 3rd-place team
+    #   3. Rank those candidates by their score (same as assign_annex_c)
+    #   4. Assign greedily, no team used twice
+
+    def resolve_b_slots(base_groups, updated_teams, third_place_counts, N):
+        """
+        For each B1-B8 slot, determine the most likely third-place team
+        using per-group third-place frequency counts rather than slot
+        appearance counts.
+        Returns dict: {'B1': {'code': ..., 'pct': ...}, ...}
+        """
+        # For each group, find the most likely 3rd-place team and their pct
+        most_likely_third = {}
+        for grp in base_groups:
+            counts = third_place_counts[grp]
+            if not counts:
+                continue
+            best_code = max(counts, key=counts.get)
+            best_pct = round(counts[best_code] / N * 100, 1)
+            most_likely_third[grp] = {'code': best_code, 'pct': best_pct,
+                                       'score': updated_teams.get(best_code, {}).get('score', 0)}
+
+        # Now assign to B-slots using Annex C rules, greedy, no repeat
+        assigned = {}
+        used_codes = set()
+        for i, slot_groups_str in enumerate(ANNEX_C_SLOTS):
+            slot = f"B{i+1}"
+            allowed_groups = list(slot_groups_str[1:])
+            # Candidates: most likely 3rd from each allowed group, sorted by score desc
+            candidates = []
+            for grp in allowed_groups:
+                if grp in most_likely_third:
+                    c = most_likely_third[grp]
+                    if c['code'] not in used_codes:
+                        candidates.append({'grp': grp, **c})
+            candidates.sort(key=lambda x: -x['score'])
+            if candidates:
+                winner = candidates[0]
+                assigned[slot] = {'code': winner['code'], 'pct': winner['pct']}
+                used_codes.add(winner['code'])
+            else:
+                assigned[slot] = None
+        return assigned
+
+    b_slot_display = resolve_b_slots(base_groups, updated_teams, third_place_counts, N)
+
+    # ── Build R32 slot→team lookup for display ────────────────────────
+    # For non-B slots (1X, 2X), use top2_appearances as before.
+    # For B slots, use b_slot_display.
+
+    # Map r32_slots index to slot strings
+    r32_slot_strings = [(slot['home_slot'], slot['away_slot']) for slot in r32_slots]
+
+    def resolve_r32_side(slot_str, slot_appearances, slot_idx, b_slot_display):
+        """Resolve a single side of an R32 matchup for display."""
+        if slot_str.startswith('B'):
+            entry = b_slot_display.get(slot_str)
+            if entry:
+                return {'code': entry['code'], 'pct': entry['pct']}
+            return None
+        else:
+            # 1X or 2X slot — use appearance counts
+            d = slot_appearances[slot_idx]
+            if not d: return None
+            best = max(d, key=d.get)
+            return {'code': best, 'pct': round(d[best] / N * 100, 1)}
+
+    # Build R32 cards
     r32_cards = []
-    for i in range(16):
-        h, a = top2_appearances(r32_slot_wins, i)
-        h_code = h['code'] if h else None
-        a_code = a['code'] if a else None
+    for i, slot in enumerate(r32_slots):
+        h_str = slot['home_slot']
+        a_str = slot['away_slot']
+        h_display = resolve_r32_side(h_str, r32_slot_appearances, i, b_slot_display)
+        a_display  = resolve_r32_side(a_str, r32_slot_appearances, i, b_slot_display)
+        h_code = h_display['code'] if h_display else None
+        a_code = a_display['code'] if a_display else None
         card = make_card(f'R32_{i+1}', h_code, a_code, updated_teams)
-        # Keep appearance pct for R32 display
-        if h: card['home']['pct'] = h['pct']
-        if a: card['away']['pct'] = a['pct']
+        # Overwrite pct with display pct (appearance % for 1X/2X, third-place % for B)
+        if h_display and card.get('home'): card['home']['pct'] = h_display['pct']
+        if a_display and card.get('away'): card['away']['pct'] = a_display['pct']
         r32_cards.append(card)
 
     # R16: winner of R32[2i] vs winner of R32[2i+1] — deterministic chain
