@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: June 20, 2026 21:30 UTC · Phase: Group Stage · 33 matches played*
+*Auto-generated: June 20, 2026 21:32 UTC · Phase: Group Stage · 33 matches played*
 
 ---
 
@@ -7,27 +7,27 @@
 *Compare live model vs pre-tournament prediction*
 
 ### 🚀 Biggest Risers
-- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 16.42% (↑ +2.0%)
-- 🇦🇷 **Argentina**: 4.4% → 5.28% (↑ +0.9%)
-- 🇳🇴 **Norway**: 2.1% → 2.92% (↑ +0.8%)
-- 🇳🇱 **Netherlands**: 1.6% → 2.37% (↑ +0.8%)
-- 🇺🇸 **USA**: 1.5% → 2.1% (↑ +0.6%)
+- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 16.16% (↑ +1.8%)
+- 🇦🇷 **Argentina**: 4.4% → 5.25% (↑ +0.8%)
+- 🇺🇸 **USA**: 1.5% → 2.35% (↑ +0.8%)
+- 🇳🇴 **Norway**: 2.1% → 2.77% (↑ +0.7%)
+- 🇳🇱 **Netherlands**: 1.6% → 2.26% (↑ +0.7%)
 
 ### 📉 Biggest Fallers
-- 🇵🇹 **Portugal**: 14.9% → 12.09% (↓ -2.8%)
-- 🇩🇪 **Germany**: 10.9% → 8.46% (↓ -2.4%)
-- 🇪🇸 **Spain**: 19.0% → 17.36% (↓ -1.6%)
-- 🇫🇷 **France**: 11.8% → 10.45% (↓ -1.4%)
-- 🇹🇷 **Türkiye**: 0.2% → 0.01% (↓ -0.2%)
+- 🇩🇪 **Germany**: 10.9% → 7.45% (↓ -3.5%)
+- 🇵🇹 **Portugal**: 14.9% → 12.75% (↓ -2.1%)
+- 🇫🇷 **France**: 11.8% → 10.37% (↓ -1.4%)
+- 🇪🇸 **Spain**: 19.0% → 17.74% (↓ -1.3%)
+- 🇭🇷 **Croatia**: 3.0% → 2.61% (↓ -0.4%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🇪🇸 **Spain** — 17.36% to win · 42.59% to reach final · 55.0% semifinal
-2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 16.42% to win · 44.95% to reach final · 68.93% semifinal
-3. 🇵🇹 **Portugal** — 12.09% to win · 37.42% to reach final · 54.19% semifinal
-4. 🇫🇷 **France** — 10.45% to win · 29.66% to reach final · 44.72% semifinal
-5. 🇩🇪 **Germany** — 8.46% to win · 25.41% to reach final · 37.26% semifinal
+1. 🇪🇸 **Spain** — 17.74% to win · 41.46% to reach final · 54.49% semifinal
+2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 16.16% to win · 44.72% to reach final · 69.12% semifinal
+3. 🇵🇹 **Portugal** — 12.75% to win · 37.73% to reach final · 54.5% semifinal
+4. 🇫🇷 **France** — 10.37% to win · 30.24% to reach final · 44.42% semifinal
+5. 🇩🇪 **Germany** — 7.45% to win · 25.32% to reach final · 37.99% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
@@ -35,11 +35,11 @@
 - **Upsets called wrong:** 14
 
 ### 😱 Biggest Upsets (model got wrong)
-- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.1% chance
-- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.8% chance
-- 🇶🇦 Qatar 1–1 Switzerland 🇨🇭 · Model only gave this outcome 15.8% chance
-- 🇮🇷 Iran 2–2 New Zealand 🇳🇿 · Model only gave this outcome 18.8% chance
-- 🇧🇷 Brazil 1–1 Morocco 🇲🇦 · Model only gave this outcome 21.6% chance
+- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 1.9% chance
+- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.6% chance
+- 🇶🇦 Qatar 1–1 Switzerland 🇨🇭 · Model only gave this outcome 15.5% chance
+- 🇮🇷 Iran 2–2 New Zealand 🇳🇿 · Model only gave this outcome 19.0% chance
+- 🇧🇷 Brazil 1–1 Morocco 🇲🇦 · Model only gave this outcome 21.1% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
 *form_nudge = score adjustment based on actual vs predicted goals*
@@ -62,14 +62,14 @@
 
 1. 🇨🇦 **J. David** — 3 goals, 0 assists
 2. 🇦🇷 **L. Messi** — 3 goals, 0 assists
-3. 🇧🇷 **Vinícius Júnior** — 2 goals, 1 assist
-4. 🇺🇸 **F. Balogun** — 2 goals, 0 assists
-5. 🇧🇷 **Matheus Cunha** — 2 goals, 0 assists
-6. 🇲🇦 **I. Saibari** — 2 goals, 0 assists
-7. 🇨🇭 **J. Manzambi** — 2 goals, 0 assists
-8. 🇩🇪 **K. Havertz** — 2 goals, 0 assists
-9. 🇨🇦 **C. Larin** — 2 goals, 0 assists
-10. 🇫🇷 **Kylian Mbappé** — 2 goals, 0 assists
+3. 🇩🇪 **D. Undav** — 2 goals, 2 assists
+4. 🇧🇷 **Vinícius Júnior** — 2 goals, 1 assist
+5. 🇺🇸 **F. Balogun** — 2 goals, 0 assists
+6. 🇧🇷 **Matheus Cunha** — 2 goals, 0 assists
+7. 🇲🇦 **I. Saibari** — 2 goals, 0 assists
+8. 🇨🇭 **J. Manzambi** — 2 goals, 0 assists
+9. 🇩🇪 **K. Havertz** — 2 goals, 0 assists
+10. 🇨🇦 **C. Larin** — 2 goals, 0 assists
 
 ## 📊 Group Stage Snapshot
 
@@ -154,9 +154,9 @@
 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England are the biggest movers in our World Cup model.
 
 Pre-tournament win probability: 14.4%
-After 33 matches: 16.42%
+After 33 matches: 16.16%
 
-That's a +2.0% swing based on real match data.
+That's a +1.8% swing based on real match data.
 
 Our model updates after every game using Poisson simulation
 & Bayesian score adjustment. 10,000 simulations per update.
@@ -170,7 +170,7 @@ Our model updates after every game using Poisson simulation
 Our model predicted the correct outcome in 16/30 (53.3%).
 
 Biggest miss: 🇪🇸 Spain 0–0 Cape Verde 🇨🇻
-We only gave that result a 2.1% chance.
+We only gave that result a 1.9% chance.
 
 That's football. The model learns and adapts after every game.
 
@@ -183,9 +183,9 @@ That's football. The model learns and adapts after every game.
 
 1. 🇨🇦 J. David — 3G 0A
 2. 🇦🇷 L. Messi — 3G 0A
-3. 🇧🇷 Vinícius Júnior — 2G 1A
-4. 🇺🇸 F. Balogun — 2G 0A
-5. 🇧🇷 Matheus Cunha — 2G 0A
+3. 🇩🇪 D. Undav — 2G 2A
+4. 🇧🇷 Vinícius Júnior — 2G 1A
+5. 🇺🇸 F. Balogun — 2G 0A
 
 #WC2026 #WorldCup2026 #GoldenBoot #Football #ProjectOlympus
 ```
