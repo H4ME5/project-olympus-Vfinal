@@ -26,6 +26,50 @@ PLAYER_CACHE_TTL_MINUTES = 60
 
 print('  API key present: ' + str(bool(API_KEY)) + ' | length: ' + str(len(API_KEY)))
 
+# ── Official FIFA Annex C slot definitions ────────────────────────────
+# Each B slot can only be filled by a 3rd-place team from the listed groups
+ANNEX_C_SLOTS = [
+    "3ABCDF",  # B1 — faces 1E
+    "3CDFGH",  # B2 — faces 1I
+    "3AEHIJ",  # B3 — faces 1G
+    "3BEFIJ",  # B4 — faces 1D
+    "3CEFHI",  # B5 — faces 1A
+    "3EHIJK",  # B6 — faces 1L
+    "3EFGIJ",  # B7 — faces 1B
+    "3DEIJL",  # B8 — faces 1K
+]
+
+# Official FIFA R32 pairings
+R32_PAIRS = [
+    ("1E","B1"), ("1I","B2"), ("2A","2B"), ("1F","2C"),
+    ("2K","2L"), ("1H","2J"), ("1D","B4"), ("1G","B3"),
+    ("1C","2F"), ("2E","2I"), ("1A","B5"), ("1L","B6"),
+    ("1J","2H"), ("2D","2G"), ("1B","B7"), ("1K","B8"),
+]
+
+def assign_annex_c(b8_teams):
+    """
+    Assign 8 best-third teams to B1-B8 slots per FIFA Annex C.
+    b8_teams: list of dicts with 'code' and 'grp', sorted best to worst.
+    Each team appears in exactly ONE slot.
+    Returns dict {B1: code, B2: code, ...}
+    """
+    assigned = {}
+    used_codes = set()  # track used TEAMS not groups
+
+    for i, slot_groups_str in enumerate(ANNEX_C_SLOTS):
+        slot = f"B{i+1}"
+        allowed = set(slot_groups_str[1:])  # e.g. "ABCDF" → {'A','B','C','D','F'}
+        for t in b8_teams:
+            if t['grp'] in allowed and t['code'] not in used_codes:
+                assigned[slot] = t['code']
+                used_codes.add(t['code'])
+                break
+        if slot not in assigned:
+            assigned[slot] = None  # no valid team available for this slot
+
+    return assigned
+
 # ── API helper ────────────────────────────────────────────────────────
 def api_get(path):
     if not API_KEY:
@@ -423,16 +467,9 @@ def add_predictions_to_results(results, base_teams):
 
 # ── LIVE MONTE CARLO TOURNAMENT SIMULATOR ────────────────────────────
 def simulate_group(codes, teams, known_results):
-    """
-    Simulate remaining games in a group.
-    known_results: list of (home, away, hg, ag) already played.
-    Returns sorted list of codes by final standings.
-    """
     pts  = defaultdict(int)
     gd   = defaultdict(int)
     gf_  = defaultdict(int)
-
-    # Apply known results first
     played_pairs = set()
     for h, a, hg, ag in known_results:
         if h not in codes or a not in codes:
@@ -443,8 +480,6 @@ def simulate_group(codes, teams, known_results):
         if hg > ag:   pts[h] += 3
         elif ag > hg: pts[a] += 3
         else:         pts[h] += 1; pts[a] += 1
-
-    # Simulate remaining games
     for i, h in enumerate(codes):
         for a in codes[i+1:]:
             if (h, a) in played_pairs or (a, h) in played_pairs:
@@ -459,14 +494,9 @@ def simulate_group(codes, teams, known_results):
             if hg > ag:   pts[h] += 3
             elif ag > hg: pts[a] += 3
             else:         pts[h] += 1; pts[a] += 1
-
     return sorted(codes, key=lambda c: (-pts[c], -gd[c], -gf_[c]))
 
 def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r32_slots):
-    """
-    Run N full tournament simulations using real group stage results.
-    Returns win/final/sf/qf/r16/adv counts per team.
-    """
     # Build known results per group
     group_results = defaultdict(list)
     for fx in finished_fixtures:
@@ -474,73 +504,69 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         if not h or not a: continue
         if 'Group' not in fx.get('stage', ''):
             continue
-        # Find which group
         for grp, teams in base_groups.items():
             codes = [t['code'] for t in teams]
             if h in codes and a in codes:
                 group_results[grp].append((h, a, fx['hg'], fx['ag']))
                 break
 
-    # Count accumulators
+    # Build group membership lookup for Annex C
+    code_to_group = {}
+    for grp, teams in base_groups.items():
+        for t in teams:
+            code_to_group[t['code']] = grp
+
     wins    = defaultdict(int)
     finals  = defaultdict(int)
     sfs     = defaultdict(int)
     qfs     = defaultdict(int)
     r16s    = defaultdict(int)
     advs    = defaultdict(int)
-    # Bracket slot tracking
-    r32_slot_wins  = defaultdict(lambda: defaultdict(int))  # slot_idx -> team -> count
-    r16_slot_wins  = defaultdict(lambda: defaultdict(int))
-    qf_slot_wins   = defaultdict(lambda: defaultdict(int))
-    sf_slot_wins   = defaultdict(lambda: defaultdict(int))
+    r32_slot_wins   = defaultdict(lambda: defaultdict(int))
+    r16_slot_wins   = defaultdict(lambda: defaultdict(int))
+    qf_slot_wins    = defaultdict(lambda: defaultdict(int))
+    sf_slot_wins    = defaultdict(lambda: defaultdict(int))
     final_slot_wins = defaultdict(lambda: defaultdict(int))
 
     for _ in range(N):
-        # ── Step 1: Simulate full group stage ──────────────────────
-        group_standings = {}  # grp -> [1st, 2nd, 3rd, 4th]
-        all_thirds = []       # (code, pts, gd, gf) for best-third calc
+        # ── Group stage ────────────────────────────────────────────
+        group_standings = {}
+        all_thirds = []
 
         for grp, teams in base_groups.items():
             codes = [t['code'] for t in teams]
             known = group_results[grp]
             standing = simulate_group(codes, updated_teams, known)
             group_standings[grp] = standing
+            all_thirds.append({
+                'code': standing[2],
+                'grp':  grp,
+                'score': updated_teams.get(standing[2], {}).get('score', 0),
+            })
 
-            # Track third-place teams for best-thirds selection
-            # Approximate pts/gd using the standing order for now
-            all_thirds.append(standing[2])  # 3rd place
+        # ── Best 8 thirds ranked by score ─────────────────────────
+        b8 = sorted(all_thirds, key=lambda t: -t['score'])[:8]
 
-        # ── Step 2: Pick 8 best thirds ─────────────────────────────
-        # Simple approach: rank thirds by team score (updated)
-        thirds_scored = sorted(
-            all_thirds,
-            key=lambda c: updated_teams.get(c, {}).get('score', 0),
-            reverse=True
-        )
-        best_thirds = set(thirds_scored[:8])
-
-        # Mark advancement
+        # Mark group stage advancement
         for grp, standing in group_standings.items():
-            advs[standing[0]] += 1  # 1st
-            advs[standing[1]] += 1  # 2nd
-            if standing[2] in best_thirds:
+            advs[standing[0]] += 1
+            advs[standing[1]] += 1
+            if standing[2] in {t['code'] for t in b8}:
                 advs[standing[2]] += 1
 
-        # ── Step 3: Build slot → team mapping for R32 ──────────────
+        # ── Build slot → team mapping ──────────────────────────────
         slot_map = {}
         for grp, standing in group_standings.items():
             slot_map[f'1{grp}'] = standing[0]
             slot_map[f'2{grp}'] = standing[1]
 
-        # Assign best thirds to B slots (B1-B8) by score order
-        thirds_list = sorted(
-            [(c, updated_teams.get(c, {}).get('score', 0)) for c in all_thirds],
-            key=lambda x: -x[1]
-        )
-        for i, (code, _) in enumerate(thirds_list[:8]):
-            slot_map[f'B{i+1}'] = code
+        # ── Assign thirds via Annex C (correct FIFA logic) ─────────
+        b_assigned = assign_annex_c(b8)
+        for slot, code in b_assigned.items():
+            if code:
+                slot_map[slot] = code
 
-        # ── Step 4: Simulate R32 ───────────────────────────────────
+        # ── R32 using official FIFA pairings ───────────────────────
         r32_winners = []
         for si, slot in enumerate(r32_slots):
             h_slot = slot['home_slot']
@@ -557,7 +583,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             winner = sim_match(h, a, updated_teams)
             r32_winners.append(winner)
 
-        # ── Step 5: R16 ────────────────────────────────────────────
+        # ── R16 ────────────────────────────────────────────────────
         r16_winners = []
         for i in range(0, 16, 2):
             h = r32_winners[i]; a = r32_winners[i+1]
@@ -571,7 +597,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             winner = sim_match(h, a, updated_teams)
             r16_winners.append(winner)
 
-        # ── Step 6: QF ─────────────────────────────────────────────
+        # ── QF ─────────────────────────────────────────────────────
         qf_winners = []
         for i in range(0, 8, 2):
             h = r16_winners[i]; a = r16_winners[i+1]
@@ -585,7 +611,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             winner = sim_match(h, a, updated_teams)
             qf_winners.append(winner)
 
-        # ── Step 7: SF ─────────────────────────────────────────────
+        # ── SF ─────────────────────────────────────────────────────
         sf_winners = []
         for i in range(0, 4, 2):
             h = qf_winners[i]; a = qf_winners[i+1]
@@ -599,7 +625,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             winner = sim_match(h, a, updated_teams)
             sf_winners.append(winner)
 
-        # ── Step 8: Final ──────────────────────────────────────────
+        # ── Final ──────────────────────────────────────────────────
         if len(sf_winners) >= 2 and sf_winners[0] and sf_winners[1]:
             h = sf_winners[0]; a = sf_winners[1]
             final_slot_wins[0][h] += 1; final_slot_wins[0][a] += 1
@@ -620,14 +646,12 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         }
 
     def top_team(slot_dict, slot_idx):
-        """Most frequent team in a slot, with percentage."""
         d = slot_dict[slot_idx]
         if not d: return None
         winner = max(d, key=d.get)
         return {'code': winner, 'pct': round(d[winner] / N * 100, 1)}
 
     def top2_teams(slot_dict, slot_idx):
-        """Top 2 teams in a slot (home/away participants)."""
         d = slot_dict[slot_idx]
         if not d: return None, None
         sorted_teams = sorted(d.items(), key=lambda x: -x[1])
@@ -638,7 +662,6 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             {'code': sorted_teams[1][0], 'pct': round(sorted_teams[1][1]/N*100,1)},
         )
 
-    # Build live bracket: most probable team in each slot
     live_bracket = {
         'r32':  [{'slot': f'R32_{i+1}',
                   'home': top2_teams(r32_slot_wins, i)[0],
@@ -901,23 +924,19 @@ def main():
         [format_result(fx) for fx in finished[-30:]], BASE['teams']
     )
 
-    # ── Player stats ──────────────────────────────────────────────────
     print('Fetching player stats...')
     player_stats = get_player_stats_cached()
 
-    # ── Events ────────────────────────────────────────────────────────
     print('Fetching match events...')
     all_events = get_all_events_cached(finished, live_now)
     tournament_goals = build_tournament_goals(all_events)
     print(f'  Tournament goals tracked: {len(tournament_goals)} players')
     player_stats = merge_goals_into_stats(player_stats, tournament_goals, all_events)
 
-    # ── Lineups (cached permanently) ──────────────────────────────────
     print('Fetching lineups...')
     lineups = get_lineups_cached(finished, live_now)
     print(f'  Lineups available: {len(lineups)} matches')
 
-    # ── Live Monte Carlo simulation ───────────────────────────────────
     print('Running live tournament simulation (10,000 runs)...')
     sim_start = datetime.now(timezone.utc)
     live_sim, live_bracket = run_live_tournament_sims(
@@ -930,13 +949,32 @@ def main():
     sim_elapsed = (datetime.now(timezone.utc) - sim_start).total_seconds()
     print(f'  Simulation complete in {sim_elapsed:.1f}s')
 
-    # Build ranked list from live sim
+    # Validate Annex C — print warning if any impossible matchups detected
+    print('  Validating R32 bracket...')
+    ANNEX_C_CHECK = {
+        'B1':set('ABCDF'),'B2':set('CDFGH'),'B3':set('AEHIJ'),
+        'B4':set('BEFIJ'),'B5':set('CEFHI'),'B6':set('EHIJK'),
+        'B7':set('EFGIJ'),'B8':set('DEIJL'),
+    }
+    code_to_grp = {}
+    for grp, teams in BASE['groups'].items():
+        for t in teams:
+            code_to_grp[t['code']] = grp
+    for slot_entry in BASE['bracket']['r32']:
+        a_slot = slot_entry.get('away_slot','')
+        away = slot_entry.get('away')
+        if a_slot.startswith('B') and away:
+            grp = code_to_grp.get(away,'?')
+            allowed = ANNEX_C_CHECK.get(a_slot, set())
+            if grp not in allowed:
+                print(f'  ⚠️  {a_slot}: {away} (Group {grp}) not in allowed groups {allowed}')
+    print('  Bracket validation complete')
+
     live_ranked = sorted(
         [{'code': c, **live_sim[c]} for c in live_sim if c in updated_teams],
         key=lambda x: -x['win']
     )
 
-    # Print top 10 changes
     print('  Top 10 live win probabilities:')
     for r in live_ranked[:10]:
         orig = BASE['teams'].get(r['code'], {}).get('winner', 0)
@@ -957,7 +995,6 @@ def main():
         },
         'teams':   updated_teams,
         'groups':  BASE['groups'],
-        # Pre-tournament frozen rankings (for Rankings tab)
         'ranked':  BASE['ranked'],
         'bracket': BASE['bracket'],
         'live': {
@@ -972,7 +1009,6 @@ def main():
             'lineups':          lineups,
             'tournament_goals': tournament_goals,
             'player_stats':     player_stats,
-            # Live simulation results (for Live Predictions tab)
             'live_ranked':      live_ranked,
             'live_bracket':     live_bracket,
         }
