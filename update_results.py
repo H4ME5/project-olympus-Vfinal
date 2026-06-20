@@ -27,7 +27,6 @@ PLAYER_CACHE_TTL_MINUTES = 60
 print('  API key present: ' + str(bool(API_KEY)) + ' | length: ' + str(len(API_KEY)))
 
 # ── Official FIFA Annex C slot definitions ────────────────────────────
-# Each B slot can only be filled by a 3rd-place team from the listed groups
 ANNEX_C_SLOTS = [
     "3ABCDF",  # B1 — faces 1E
     "3CDFGH",  # B2 — faces 1I
@@ -50,24 +49,20 @@ R32_PAIRS = [
 def assign_annex_c(b8_teams):
     """
     Assign 8 best-third teams to B1-B8 slots per FIFA Annex C.
-    b8_teams: list of dicts with 'code' and 'grp', sorted best to worst.
     Each team appears in exactly ONE slot.
-    Returns dict {B1: code, B2: code, ...}
     """
     assigned = {}
-    used_codes = set()  # track used TEAMS not groups
-
+    used_codes = set()
     for i, slot_groups_str in enumerate(ANNEX_C_SLOTS):
         slot = f"B{i+1}"
-        allowed = set(slot_groups_str[1:])  # e.g. "ABCDF" → {'A','B','C','D','F'}
+        allowed = set(slot_groups_str[1:])
         for t in b8_teams:
             if t['grp'] in allowed and t['code'] not in used_codes:
                 assigned[slot] = t['code']
                 used_codes.add(t['code'])
                 break
         if slot not in assigned:
-            assigned[slot] = None  # no valid team available for this slot
-
+            assigned[slot] = None
     return assigned
 
 # ── API helper ────────────────────────────────────────────────────────
@@ -187,64 +182,48 @@ def fetch_lineups_raw(fixture_id):
 def get_lineups_cached(finished, live_now):
     cache = load_cache(CACHE_LINEUPS)
     newly_fetched = 0
-
     for fx in finished:
         fid = str(fx.get('fixture_id'))
-        if not fid or fid == 'None':
-            continue
+        if not fid or fid == 'None': continue
         if fid in cache:
-            cache[fid]['hg'] = fx['hg']
-            cache[fid]['ag'] = fx['ag']
-            cache[fid]['live'] = False
-            continue
+            cache[fid]['hg'] = fx['hg']; cache[fid]['ag'] = fx['ag']
+            cache[fid]['live'] = False; continue
         lu = fetch_lineups_raw(fx['fixture_id'])
         if lu and len(lu) == 2 and any(len(t.get('players', [])) > 0 for t in lu):
-            cache[fid] = {
-                'home': fx['home'], 'away': fx['away'],
-                'hg': fx['hg'], 'ag': fx['ag'],
-                'stage': fx['stage'], 'date': fx['date'],
-                'live': False, 'lineups': lu, 'fixture_id': fx['fixture_id'],
-            }
+            cache[fid] = {'home': fx['home'], 'away': fx['away'],
+                'hg': fx['hg'], 'ag': fx['ag'], 'stage': fx['stage'],
+                'date': fx['date'], 'live': False, 'lineups': lu,
+                'fixture_id': fx['fixture_id']}
             newly_fetched += 1
             print(f'  Lineup cached: {fx["home_name"]} vs {fx["away_name"]}')
-
     for fx in live_now:
         fid = str(fx.get('fixture_id'))
-        if not fid or fid == 'None':
-            continue
+        if not fid or fid == 'None': continue
         if fid in cache:
-            cache[fid]['hg'] = fx['hg']
-            cache[fid]['ag'] = fx['ag']
-            cache[fid]['live'] = True
-            continue
+            cache[fid]['hg'] = fx['hg']; cache[fid]['ag'] = fx['ag']
+            cache[fid]['live'] = True; continue
         lu = fetch_lineups_raw(fx['fixture_id'])
         if lu and len(lu) == 2 and any(len(t.get('players', [])) > 0 for t in lu):
-            cache[fid] = {
-                'home': fx['home'], 'away': fx['away'],
-                'hg': fx['hg'], 'ag': fx['ag'],
-                'stage': fx['stage'], 'date': fx['date'],
-                'live': True, 'lineups': lu, 'fixture_id': fx['fixture_id'],
-            }
+            cache[fid] = {'home': fx['home'], 'away': fx['away'],
+                'hg': fx['hg'], 'ag': fx['ag'], 'stage': fx['stage'],
+                'date': fx['date'], 'live': True, 'lineups': lu,
+                'fixture_id': fx['fixture_id']}
             newly_fetched += 1
             print(f'  Live lineup cached: {fx["home_name"]} vs {fx["away_name"]}')
-
     save_cache(CACHE_LINEUPS, cache)
     if newly_fetched > 0:
         print(f'  Lineups: fetched {newly_fetched} new, {len(cache)} total cached')
     else:
         print(f'  Lineups: all {len(cache)} from cache (0 API calls)')
-
     return list(cache.values())
 
 # ── Fetch events ──────────────────────────────────────────────────────
 def fetch_match_events(fixture_id):
     data = api_get(f'/fixtures/events?fixture={fixture_id}&type=Goal')
-    if not data or not isinstance(data, list):
-        return []
+    if not data or not isinstance(data, list): return []
     events = []
     for e in data:
-        player = e.get('player', {})
-        team   = e.get('team', {})
+        player = e.get('player', {}); team = e.get('team', {})
         events.append({
             'minute':      e.get('time', {}).get('elapsed', 0),
             'player_name': player.get('name', ''),
@@ -264,73 +243,46 @@ def build_tournament_goals(all_events):
 
 def get_all_events_cached(finished, live_now):
     cache = load_cache(CACHE_EVENTS)
-    all_events = []
-    newly_fetched = 0
-
+    all_events = []; newly_fetched = 0
     for fx in finished:
         fid = str(fx.get('fixture_id'))
-        if not fid or fid == 'None':
-            continue
-        if fid in cache:
-            all_events.extend(cache[fid])
+        if not fid or fid == 'None': continue
+        if fid in cache: all_events.extend(cache[fid])
         else:
             events = fetch_match_events(fx['fixture_id'])
-            cache[fid] = events
-            all_events.extend(events)
-            newly_fetched += 1
-
+            cache[fid] = events; all_events.extend(events); newly_fetched += 1
     for fx in live_now:
         fid = str(fx.get('fixture_id'))
-        if not fid or fid == 'None':
-            continue
+        if not fid or fid == 'None': continue
         events = fetch_match_events(fx['fixture_id'])
-        cache[fid] = events
-        all_events.extend(events)
-        newly_fetched += 1
-
+        cache[fid] = events; all_events.extend(events); newly_fetched += 1
     if newly_fetched > 0:
         save_cache(CACHE_EVENTS, cache)
         print(f'  Events: fetched {newly_fetched} new fixtures, {len(cache)} total cached')
     else:
         print(f'  Events: all {len(cache)} fixtures from cache (0 API calls)')
-
     return all_events
 
 # ── Player stats ──────────────────────────────────────────────────────
 def parse_player_item(item):
-    player   = item.get('player', {})
-    stats    = item.get('statistics', [{}])[0]
-    games    = stats.get('games', {})
-    goals    = stats.get('goals', {})
-    cards    = stats.get('cards', {})
-    passes   = stats.get('passes', {})
-    shots    = stats.get('shots', {})
-    dribbles = stats.get('dribbles', {})
-    team_name     = stats.get('team', {}).get('name', '')
-    team_code     = name_to_code(team_name)
-    goals_scored  = goals.get('total') or 0
-    assists       = goals.get('assists') or 0
-    yellow_cards  = cards.get('yellow') or 0
-    red_cards     = cards.get('red') or 0
-    yellow_red    = cards.get('yellowred') or 0
-    appearances   = games.get('appearences') or 0
-    minutes       = games.get('minutes') or 0
-    rating        = games.get('rating')
-    shots_total   = shots.get('total') or 0
-    shots_on      = shots.get('on') or 0
-    key_passes    = passes.get('key') or 0
-    pass_acc      = passes.get('accuracy') or 0
-    dribbles_succ = dribbles.get('success') or 0
+    player = item.get('player', {}); stats = item.get('statistics', [{}])[0]
+    games = stats.get('games', {}); goals = stats.get('goals', {})
+    cards = stats.get('cards', {}); passes = stats.get('passes', {})
+    shots = stats.get('shots', {}); dribbles = stats.get('dribbles', {})
+    team_name = stats.get('team', {}).get('name', '')
     return {
         'id': player.get('id'), 'name': player.get('name', ''),
         'nationality': player.get('nationality', ''), 'photo': player.get('photo', ''),
-        'team_name': team_name, 'team_code': team_code,
-        'appearances': appearances, 'minutes': minutes,
-        'rating': round(float(rating), 1) if rating else None,
-        'goals': goals_scored, 'assists': assists,
-        'yellow_cards': yellow_cards, 'red_cards': red_cards + yellow_red,
-        'shots_total': shots_total, 'shots_on': shots_on,
-        'key_passes': key_passes, 'pass_accuracy': pass_acc, 'dribbles': dribbles_succ,
+        'team_name': team_name, 'team_code': name_to_code(team_name),
+        'appearances': games.get('appearences') or 0,
+        'minutes': games.get('minutes') or 0,
+        'rating': round(float(games.get('rating')), 1) if games.get('rating') else None,
+        'goals': goals.get('total') or 0, 'assists': goals.get('assists') or 0,
+        'yellow_cards': cards.get('yellow') or 0,
+        'red_cards': (cards.get('red') or 0) + (cards.get('yellowred') or 0),
+        'shots_total': shots.get('total') or 0, 'shots_on': shots.get('on') or 0,
+        'key_passes': passes.get('key') or 0, 'pass_accuracy': passes.get('accuracy') or 0,
+        'dribbles': dribbles.get('success') or 0,
     }
 
 def get_player_stats_cached():
@@ -344,18 +296,12 @@ def get_player_stats_cached():
     for page in range(1, 16):
         data = api_get(f'/players?league={WC_ID}&season={SEASON}&page={page}')
         if not data or not isinstance(data, list):
-            print(f'  Page {page} failed — retrying...')
             data = api_get(f'/players?league={WC_ID}&season={SEASON}&page={page}')
-            if not data or not isinstance(data, list):
-                print(f'  Page {page} failed twice — skipping')
-                continue
-        if len(data) == 0:
-            break
+            if not data or not isinstance(data, list): continue
+        if len(data) == 0: break
         for item in data:
             p = parse_player_item(item)
-            if p['appearances'] == 0:
-                continue
-            all_players.append(p)
+            if p['appearances'] > 0: all_players.append(p)
     top_scorers_data = api_get(f'/players/topscorers?league={WC_ID}&season={SEASON}')
     if top_scorers_data and isinstance(top_scorers_data, list):
         existing_ids = {p['id'] for p in all_players}
@@ -365,19 +311,13 @@ def get_player_stats_cached():
             if p['id'] in existing_ids:
                 for existing in all_players:
                     if existing['id'] == p['id'] and p['goals'] > existing['goals']:
-                        existing['goals'] = p['goals']
-                        existing['assists'] = p['assists']
+                        existing['goals'] = p['goals']; existing['assists'] = p['assists']
                 continue
-            if p['goals'] == 0:
-                continue
-            all_players.append(p)
-            added += 1
-        print(f'  Top scorers: added {added} new players, updated existing counts')
+            if p['goals'] == 0: continue
+            all_players.append(p); added += 1
+        print(f'  Top scorers: added {added} new players')
     print(f'  Total players fetched: {len(all_players)}')
-    save_cache(CACHE_PLAYERS, {
-        '_timestamp': datetime.now(timezone.utc).isoformat(),
-        'players': all_players,
-    })
+    save_cache(CACHE_PLAYERS, {'_timestamp': datetime.now(timezone.utc).isoformat(), 'players': all_players})
     return all_players
 
 def merge_goals_into_stats(player_stats, tournament_goals, all_events):
@@ -386,8 +326,7 @@ def merge_goals_into_stats(player_stats, tournament_goals, all_events):
         pid = ev.get('player_id')
         if pid and ev.get('detail') != 'Own Goal':
             event_player_info[str(pid)] = {
-                'name': ev.get('player_name', ''),
-                'team_name': ev.get('team_name', ''),
+                'name': ev.get('player_name', ''), 'team_name': ev.get('team_name', ''),
                 'team_code': name_to_code(ev.get('team_name', '')),
             }
     existing_ids = {}
@@ -395,9 +334,8 @@ def merge_goals_into_stats(player_stats, tournament_goals, all_events):
         existing_ids[str(p['id'])] = p
         pid_str = str(p['id'])
         if pid_str in tournament_goals:
-            event_goals = tournament_goals[pid_str]
-            if event_goals > p['goals']:
-                p['goals'] = event_goals
+            if tournament_goals[pid_str] > p['goals']:
+                p['goals'] = tournament_goals[pid_str]
     added = 0
     for pid_str, goal_count in tournament_goals.items():
         if pid_str not in existing_ids and goal_count > 0:
@@ -406,17 +344,13 @@ def merge_goals_into_stats(player_stats, tournament_goals, all_events):
                 'id': int(pid_str) if pid_str.isdigit() else pid_str,
                 'name': info.get('name', f'Player {pid_str}'),
                 'nationality': '', 'photo': '',
-                'team_name': info.get('team_name', ''),
-                'team_code': info.get('team_code'),
+                'team_name': info.get('team_name', ''), 'team_code': info.get('team_code'),
                 'appearances': 1, 'minutes': 0, 'rating': None,
-                'goals': goal_count, 'assists': 0,
-                'yellow_cards': 0, 'red_cards': 0,
-                'shots_total': 0, 'shots_on': 0,
-                'key_passes': 0, 'pass_accuracy': 0, 'dribbles': 0,
+                'goals': goal_count, 'assists': 0, 'yellow_cards': 0, 'red_cards': 0,
+                'shots_total': 0, 'shots_on': 0, 'key_passes': 0, 'pass_accuracy': 0, 'dribbles': 0,
             })
             added += 1
-    if added:
-        print(f'  Merged {added} live-match scorers into player stats')
+    if added: print(f'  Merged {added} live-match scorers into player stats')
     return player_stats
 
 # ── Match engine ──────────────────────────────────────────────────────
@@ -433,25 +367,21 @@ def get_lambdas(home, away, teams):
 
 def sim_match(home, away, teams):
     lh, la = get_lambdas(home, away, teams)
-    hg = np.random.poisson(lh)
-    ag = np.random.poisson(la)
+    hg = np.random.poisson(lh); ag = np.random.poisson(la)
     if hg > ag: return home
     if ag > hg: return away
     return home if np.random.random() < 0.5 else away
 
 def predict_match(home, away, base_teams):
-    if home not in base_teams or away not in base_teams:
-        return None
+    if home not in base_teams or away not in base_teams: return None
     lh, la = get_lambdas(home, away, base_teams)
     N = 50000
-    hg = np.random.poisson(lh, N)
-    ag = np.random.poisson(la, N)
+    hg = np.random.poisson(lh, N); ag = np.random.poisson(la, N)
     return {
         'home_win': round(int(np.sum(hg > ag)) / N * 100, 1),
         'draw':     round(int(np.sum(hg == ag)) / N * 100, 1),
         'away_win': round(int(np.sum(ag > hg)) / N * 100, 1),
-        'exp_home': round(lh, 2),
-        'exp_away': round(la, 2),
+        'exp_home': round(lh, 2), 'exp_away': round(la, 2),
     }
 
 def add_predictions_to_results(results, base_teams):
@@ -460,178 +390,143 @@ def add_predictions_to_results(results, base_teams):
         r2 = dict(r)
         if r.get('finished') or not r.get('live', False):
             pred = predict_match(r['home'], r['away'], base_teams)
-            if pred:
-                r2['prediction'] = pred
+            if pred: r2['prediction'] = pred
         enriched.append(r2)
     return enriched
 
 # ── LIVE MONTE CARLO TOURNAMENT SIMULATOR ────────────────────────────
 def simulate_group(codes, teams, known_results):
-    pts  = defaultdict(int)
-    gd   = defaultdict(int)
-    gf_  = defaultdict(int)
+    pts = defaultdict(int); gd = defaultdict(int); gf_ = defaultdict(int)
     played_pairs = set()
     for h, a, hg, ag in known_results:
-        if h not in codes or a not in codes:
-            continue
+        if h not in codes or a not in codes: continue
         played_pairs.add((h, a))
-        gf_[h] += hg; gd[h] += hg - ag
-        gf_[a] += ag; gd[a] += ag - hg
-        if hg > ag:   pts[h] += 3
+        gf_[h] += hg; gd[h] += hg-ag; gf_[a] += ag; gd[a] += ag-hg
+        if hg > ag: pts[h] += 3
         elif ag > hg: pts[a] += 3
-        else:         pts[h] += 1; pts[a] += 1
+        else: pts[h] += 1; pts[a] += 1
     for i, h in enumerate(codes):
         for a in codes[i+1:]:
-            if (h, a) in played_pairs or (a, h) in played_pairs:
-                continue
-            if h not in teams or a not in teams:
-                continue
+            if (h,a) in played_pairs or (a,h) in played_pairs: continue
+            if h not in teams or a not in teams: continue
             lh, la = get_lambdas(h, a, teams)
-            hg = np.random.poisson(lh)
-            ag = np.random.poisson(la)
-            gf_[h] += hg; gd[h] += hg - ag
-            gf_[a] += ag; gd[a] += ag - hg
-            if hg > ag:   pts[h] += 3
+            hg = np.random.poisson(lh); ag = np.random.poisson(la)
+            gf_[h] += hg; gd[h] += hg-ag; gf_[a] += ag; gd[a] += ag-hg
+            if hg > ag: pts[h] += 3
             elif ag > hg: pts[a] += 3
-            else:         pts[h] += 1; pts[a] += 1
+            else: pts[h] += 1; pts[a] += 1
     return sorted(codes, key=lambda c: (-pts[c], -gd[c], -gf_[c]))
 
 def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r32_slots):
-    # Build known results per group
     group_results = defaultdict(list)
     for fx in finished_fixtures:
         h, a = fx['home'], fx['away']
         if not h or not a: continue
-        if 'Group' not in fx.get('stage', ''):
-            continue
+        if 'Group' not in fx.get('stage', ''): continue
         for grp, teams in base_groups.items():
             codes = [t['code'] for t in teams]
             if h in codes and a in codes:
-                group_results[grp].append((h, a, fx['hg'], fx['ag']))
-                break
+                group_results[grp].append((h, a, fx['hg'], fx['ag'])); break
 
-    # Build group membership lookup for Annex C
-    code_to_group = {}
-    for grp, teams in base_groups.items():
-        for t in teams:
-            code_to_group[t['code']] = grp
+    wins = defaultdict(int); finals = defaultdict(int)
+    sfs  = defaultdict(int); qfs    = defaultdict(int)
+    r16s = defaultdict(int); advs   = defaultdict(int)
 
-    wins    = defaultdict(int)
-    finals  = defaultdict(int)
-    sfs     = defaultdict(int)
-    qfs     = defaultdict(int)
-    r16s    = defaultdict(int)
-    advs    = defaultdict(int)
+    # Appearance tracking (for % display in R32 cards)
     r32_slot_wins   = defaultdict(lambda: defaultdict(int))
-    r16_slot_wins   = defaultdict(lambda: defaultdict(int))
-    qf_slot_wins    = defaultdict(lambda: defaultdict(int))
-    sf_slot_wins    = defaultdict(lambda: defaultdict(int))
-    final_slot_wins = defaultdict(lambda: defaultdict(int))
+    # Winner tracking (for feeding correct teams into next round display)
+    r32_winner_counts = defaultdict(lambda: defaultdict(int))
+    r16_winner_counts = defaultdict(lambda: defaultdict(int))
+    qf_winner_counts  = defaultdict(lambda: defaultdict(int))
+    sf_winner_counts  = defaultdict(lambda: defaultdict(int))
+    final_winner_counts = defaultdict(int)
 
     for _ in range(N):
         # ── Group stage ────────────────────────────────────────────
-        group_standings = {}
-        all_thirds = []
-
+        group_standings = {}; all_thirds = []
         for grp, teams in base_groups.items():
             codes = [t['code'] for t in teams]
-            known = group_results[grp]
-            standing = simulate_group(codes, updated_teams, known)
+            standing = simulate_group(codes, updated_teams, group_results[grp])
             group_standings[grp] = standing
             all_thirds.append({
-                'code': standing[2],
-                'grp':  grp,
+                'code': standing[2], 'grp': grp,
                 'score': updated_teams.get(standing[2], {}).get('score', 0),
             })
 
-        # ── Best 8 thirds ranked by score ─────────────────────────
         b8 = sorted(all_thirds, key=lambda t: -t['score'])[:8]
-
-        # Mark group stage advancement
         for grp, standing in group_standings.items():
-            advs[standing[0]] += 1
-            advs[standing[1]] += 1
-            if standing[2] in {t['code'] for t in b8}:
-                advs[standing[2]] += 1
+            advs[standing[0]] += 1; advs[standing[1]] += 1
+            if standing[2] in {t['code'] for t in b8}: advs[standing[2]] += 1
 
-        # ── Build slot → team mapping ──────────────────────────────
         slot_map = {}
         for grp, standing in group_standings.items():
             slot_map[f'1{grp}'] = standing[0]
             slot_map[f'2{grp}'] = standing[1]
 
-        # ── Assign thirds via Annex C (correct FIFA logic) ─────────
         b_assigned = assign_annex_c(b8)
         for slot, code in b_assigned.items():
-            if code:
-                slot_map[slot] = code
+            if code: slot_map[slot] = code
 
-        # ── R32 using official FIFA pairings ───────────────────────
+        # ── R32 ────────────────────────────────────────────────────
         r32_winners = []
         for si, slot in enumerate(r32_slots):
-            h_slot = slot['home_slot']
-            a_slot = slot['away_slot']
-            h = slot_map.get(h_slot)
-            a = slot_map.get(a_slot)
+            h = slot_map.get(slot['home_slot'])
+            a = slot_map.get(slot['away_slot'])
             if not h or not a or h not in updated_teams or a not in updated_teams:
-                w = h or a
-                r32_winners.append(w)
-                if w: r32_slot_wins[si][w] += 1
+                w = h or a; r32_winners.append(w)
+                if w: r32_slot_wins[si][w] += 1; r32_winner_counts[si][w] += 1
                 continue
             r16s[h] += 1; r16s[a] += 1
             r32_slot_wins[si][h] += 1; r32_slot_wins[si][a] += 1
             winner = sim_match(h, a, updated_teams)
             r32_winners.append(winner)
+            r32_winner_counts[si][winner] += 1
 
         # ── R16 ────────────────────────────────────────────────────
         r16_winners = []
         for i in range(0, 16, 2):
-            h = r32_winners[i]; a = r32_winners[i+1]
-            si = i // 2
+            h = r32_winners[i]; a = r32_winners[i+1]; si = i // 2
             if not h or not a:
                 w = h or a; r16_winners.append(w)
-                if w: r16_slot_wins[si][w] += 1
+                if w: r16_winner_counts[si][w] += 1
                 continue
             qfs[h] += 1; qfs[a] += 1
-            r16_slot_wins[si][h] += 1; r16_slot_wins[si][a] += 1
             winner = sim_match(h, a, updated_teams)
             r16_winners.append(winner)
+            r16_winner_counts[si][winner] += 1
 
         # ── QF ─────────────────────────────────────────────────────
         qf_winners = []
         for i in range(0, 8, 2):
-            h = r16_winners[i]; a = r16_winners[i+1]
-            si = i // 2
+            h = r16_winners[i]; a = r16_winners[i+1]; si = i // 2
             if not h or not a:
                 w = h or a; qf_winners.append(w)
-                if w: qf_slot_wins[si][w] += 1
+                if w: qf_winner_counts[si][w] += 1
                 continue
             sfs[h] += 1; sfs[a] += 1
-            qf_slot_wins[si][h] += 1; qf_slot_wins[si][a] += 1
             winner = sim_match(h, a, updated_teams)
             qf_winners.append(winner)
+            qf_winner_counts[si][winner] += 1
 
         # ── SF ─────────────────────────────────────────────────────
         sf_winners = []
         for i in range(0, 4, 2):
-            h = qf_winners[i]; a = qf_winners[i+1]
-            si = i // 2
+            h = qf_winners[i]; a = qf_winners[i+1]; si = i // 2
             if not h or not a:
                 w = h or a; sf_winners.append(w)
-                if w: sf_slot_wins[si][w] += 1
+                if w: sf_winner_counts[si][w] += 1
                 continue
             finals[h] += 1; finals[a] += 1
-            sf_slot_wins[si][h] += 1; sf_slot_wins[si][a] += 1
             winner = sim_match(h, a, updated_teams)
             sf_winners.append(winner)
+            sf_winner_counts[si][winner] += 1
 
         # ── Final ──────────────────────────────────────────────────
         if len(sf_winners) >= 2 and sf_winners[0] and sf_winners[1]:
             h = sf_winners[0]; a = sf_winners[1]
-            final_slot_wins[0][h] += 1; final_slot_wins[0][a] += 1
             champion = sim_match(h, a, updated_teams)
             wins[champion] += 1
-            final_slot_wins[1][champion] += 1
+            final_winner_counts[champion] += 1
 
     # Convert to percentages
     results = {}
@@ -645,49 +540,64 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             'adv':   round(advs[code]   / N * 100, 2),
         }
 
-    def top_team(slot_dict, slot_idx):
-        d = slot_dict[slot_idx]
+    def top_winner(d):
+        """Most frequent winner in a slot dict."""
         if not d: return None
-        winner = max(d, key=d.get)
-        return {'code': winner, 'pct': round(d[winner] / N * 100, 1)}
+        w = max(d, key=d.get)
+        return {'code': w, 'pct': round(d[w] / N * 100, 1)}
 
-    def top2_teams(slot_dict, slot_idx):
+    def top2_appearances(slot_dict, slot_idx):
+        """Top 2 teams that appeared in a slot (for R32 cards only)."""
         d = slot_dict[slot_idx]
         if not d: return None, None
         sorted_teams = sorted(d.items(), key=lambda x: -x[1])
-        if len(sorted_teams) < 2:
-            return {'code': sorted_teams[0][0], 'pct': round(sorted_teams[0][1]/N*100,1)}, None
-        return (
-            {'code': sorted_teams[0][0], 'pct': round(sorted_teams[0][1]/N*100,1)},
-            {'code': sorted_teams[1][0], 'pct': round(sorted_teams[1][1]/N*100,1)},
-        )
+        t1 = {'code': sorted_teams[0][0], 'pct': round(sorted_teams[0][1]/N*100,1)}
+        t2 = {'code': sorted_teams[1][0], 'pct': round(sorted_teams[1][1]/N*100,1)} if len(sorted_teams) > 1 else None
+        return t1, t2
+
+    # ── Build live bracket ─────────────────────────────────────────
+    # R32: show top 2 teams that appeared (one is the slot team, one is their opponent)
+    r32_cards = []
+    for i in range(16):
+        h, a = top2_appearances(r32_slot_wins, i)
+        w = top_winner(r32_winner_counts[i])
+        r32_cards.append({'slot': f'R32_{i+1}', 'home': h, 'away': a, 'winner': w})
+
+    # R16: home = most frequent winner of R32[i*2], away = most frequent winner of R32[i*2+1]
+    r16_cards = []
+    for i in range(8):
+        h = top_winner(r32_winner_counts[i*2])
+        a = top_winner(r32_winner_counts[i*2+1])
+        w = top_winner(r16_winner_counts[i])
+        r16_cards.append({'slot': f'R16_{i+1}', 'home': h, 'away': a, 'winner': w})
+
+    # QF: home = most frequent winner of R16[i*2], away = most frequent winner of R16[i*2+1]
+    qf_cards = []
+    for i in range(4):
+        h = top_winner(r16_winner_counts[i*2])
+        a = top_winner(r16_winner_counts[i*2+1])
+        w = top_winner(qf_winner_counts[i])
+        qf_cards.append({'slot': f'QF_{i+1}', 'home': h, 'away': a, 'winner': w})
+
+    # SF: home = most frequent winner of QF[i*2], away = most frequent winner of QF[i*2+1]
+    sf_cards = []
+    for i in range(2):
+        h = top_winner(qf_winner_counts[i*2])
+        a = top_winner(qf_winner_counts[i*2+1])
+        w = top_winner(sf_winner_counts[i])
+        sf_cards.append({'slot': f'SF_{i+1}', 'home': h, 'away': a, 'winner': w})
+
+    # Final: home = most frequent SF[0] winner, away = most frequent SF[1] winner
+    final_home = top_winner(sf_winner_counts[0])
+    final_away = top_winner(sf_winner_counts[1])
+    final_winner = top_winner(final_winner_counts) if final_winner_counts else None
 
     live_bracket = {
-        'r32':  [{'slot': f'R32_{i+1}',
-                  'home': top2_teams(r32_slot_wins, i)[0],
-                  'away': top2_teams(r32_slot_wins, i)[1],
-                  'winner': top_team(r32_slot_wins, i)}
-                 for i in range(16)],
-        'r16':  [{'slot': f'R16_{i+1}',
-                  'home': top2_teams(r16_slot_wins, i)[0],
-                  'away': top2_teams(r16_slot_wins, i)[1],
-                  'winner': top_team(r16_slot_wins, i)}
-                 for i in range(8)],
-        'qf':   [{'slot': f'QF_{i+1}',
-                  'home': top2_teams(qf_slot_wins, i)[0],
-                  'away': top2_teams(qf_slot_wins, i)[1],
-                  'winner': top_team(qf_slot_wins, i)}
-                 for i in range(4)],
-        'sf':   [{'slot': f'SF_{i+1}',
-                  'home': top2_teams(sf_slot_wins, i)[0],
-                  'away': top2_teams(sf_slot_wins, i)[1],
-                  'winner': top_team(sf_slot_wins, i)}
-                 for i in range(2)],
-        'final': {
-            'home':   top2_teams(final_slot_wins, 0)[0],
-            'away':   top2_teams(final_slot_wins, 0)[1],
-            'winner': top_team(final_slot_wins, 1),
-        },
+        'r32':   r32_cards,
+        'r16':   r16_cards,
+        'qf':    qf_cards,
+        'sf':    sf_cards,
+        'final': {'home': final_home, 'away': final_away, 'winner': final_winner},
     }
 
     return results, live_bracket
@@ -725,8 +635,7 @@ def live_win_probability(home, away, hg_now, ag_now, minute, teams):
     remaining   = (90 - mins_played) / 90
     extra_h = np.random.poisson(lh_90*remaining, 10000)
     extra_a = np.random.poisson(la_90*remaining, 10000)
-    final_h = hg_now + extra_h
-    final_a = ag_now + extra_a
+    final_h = hg_now + extra_h; final_a = ag_now + extra_a
     return {
         'home_win':  round(int(np.sum(final_h > final_a))/10000*100, 1),
         'draw':      round(int(np.sum(final_h == final_a))/10000*100, 1),
@@ -739,15 +648,11 @@ def compute_live_probs(live_fixtures, teams):
     probs = []
     for fx in live_fixtures:
         if not fx['home'] or not fx['away']: continue
-        prob = live_win_probability(fx['home'], fx['away'],
-                                    fx['hg'], fx['ag'], fx['minute'], teams)
+        prob = live_win_probability(fx['home'], fx['away'], fx['hg'], fx['ag'], fx['minute'], teams)
         if prob:
-            probs.append({
-                'home': fx['home'], 'away': fx['away'],
-                'hg': fx['hg'], 'ag': fx['ag'],
-                'minute': fx['minute'], 'stage': fx['stage'],
-                'prob': prob,
-            })
+            probs.append({'home': fx['home'], 'away': fx['away'],
+                'hg': fx['hg'], 'ag': fx['ag'], 'minute': fx['minute'],
+                'stage': fx['stage'], 'prob': prob})
     return probs
 
 # ── Group standings ───────────────────────────────────────────────────
@@ -761,17 +666,15 @@ def compute_standings(finished, base_groups):
         grp = None
         for g, teams in base_groups.items():
             codes = [t['code'] for t in teams]
-            if h in codes and a in codes:
-                grp = g; break
+            if h in codes and a in codes: grp = g; break
         if not grp: continue
         if 'Group' not in fx.get('stage', 'Group'): continue
-        s = standings[grp]
-        hg, ag = fx['hg'], fx['ag']
+        s = standings[grp]; hg, ag = fx['hg'], fx['ag']
         s[h]['gf']+=hg; s[h]['ga']+=ag; s[h]['gd']+=hg-ag; s[h]['played']+=1
         s[a]['gf']+=ag; s[a]['ga']+=hg; s[a]['gd']+=ag-hg; s[a]['played']+=1
-        if hg > ag:   s[h]['pts'] += 3
+        if hg > ag: s[h]['pts'] += 3
         elif ag > hg: s[a]['pts'] += 3
-        else:         s[h]['pts'] += 1; s[a]['pts'] += 1
+        else: s[h]['pts'] += 1; s[a]['pts'] += 1
     return {g: sorted(tbl.items(), key=lambda x: (-x[1]['pts'],-x[1]['gd'],-x[1]['gf']))
             for g, tbl in standings.items()}
 
@@ -779,7 +682,7 @@ def get_eliminated(finished):
     elim = set()
     for fx in finished:
         if 'Group' in fx.get('stage', 'Group'): continue
-        if fx['hg'] < fx['ag']:   elim.add(fx['home'])
+        if fx['hg'] < fx['ag']: elim.add(fx['home'])
         elif fx['ag'] < fx['hg']: elim.add(fx['away'])
     return [e for e in elim if e]
 
@@ -793,46 +696,33 @@ def get_phase(fixtures):
     return 'PRE_TOURNAMENT'
 
 def parse_fixture(fx):
-    fixture = fx.get('fixture', {})
-    teams   = fx.get('teams', {})
-    goals   = fx.get('goals', {})
-    league  = fx.get('league', {})
-    status  = fixture.get('status', {})
+    fixture = fx.get('fixture', {}); teams = fx.get('teams', {})
+    goals = fx.get('goals', {}); league = fx.get('league', {})
+    status = fixture.get('status', {})
     home_name = teams.get('home', {}).get('name', '')
     away_name = teams.get('away', {}).get('name', '')
-    home_code = name_to_code(home_name)
-    away_code = name_to_code(away_name)
-    status_short = status.get('short', '')
-    elapsed      = status.get('elapsed') or 0
-    hg = goals.get('home'); ag = goals.get('away')
-    if hg is None: hg = 0
-    if ag is None: ag = 0
+    status_short = status.get('short', ''); elapsed = status.get('elapsed') or 0
+    hg = goals.get('home') or 0; ag = goals.get('away') or 0
     is_finished = status_short in ('FT', 'AET', 'PEN', 'AWD', 'WO')
     is_live     = status_short in ('1H', 'HT', '2H', 'ET', 'BT', 'P', 'INT', 'LIVE')
     is_upcoming = status_short in ('NS', 'TBD', 'PST', 'CANC', 'ABD')
-    ko_str = fixture.get('date', '')
-    ko     = parse_utc(ko_str)
+    ko_str = fixture.get('date', ''); ko = parse_utc(ko_str)
     if not is_finished and ko:
-        age_hours = (datetime.now(timezone.utc) - ko).total_seconds() / 3600
-        if age_hours > 3:
-            is_finished = True
-            is_live = False
-    round_ = league.get('round', 'Group Stage')
+        if (datetime.now(timezone.utc) - ko).total_seconds() / 3600 > 3:
+            is_finished = True; is_live = False
     return {
         'fixture_id': fixture.get('id'),
-        'home': home_code, 'away': away_code,
+        'home': name_to_code(home_name), 'away': name_to_code(away_name),
         'home_name': home_name, 'away_name': away_name,
         'hg': int(hg), 'ag': int(ag),
         'minute': int(elapsed) if elapsed else 0,
-        'status': status_short, 'stage': str(round_),
+        'status': status_short, 'stage': str(league.get('round', 'Group Stage')),
         'date': ko_str[:16].replace('T',' ') if ko_str else '',
-        'kickoff': ko, 'live': is_live,
-        'finished': is_finished, 'upcoming': is_upcoming,
+        'kickoff': ko, 'live': is_live, 'finished': is_finished, 'upcoming': is_upcoming,
     }
 
 def should_update(fixtures):
-    now = datetime.now(timezone.utc)
-    next_kickoff = None
+    now = datetime.now(timezone.utc); next_kickoff = None
     for fx in fixtures:
         if fx['live']:
             return True, f"Match live: {fx['home_name']} vs {fx['away_name']} ({fx['minute']}')", None
@@ -844,8 +734,7 @@ def should_update(fixtures):
                 next_kickoff = fx['kickoff']
     for fx in fixtures:
         if fx['finished'] and fx['kickoff']:
-            age_hours = (now - fx['kickoff']).total_seconds() / 3600
-            if age_hours < 3:
+            if (now - fx['kickoff']).total_seconds() / 3600 < 3:
                 return True, f"Recent result: {fx['home_name']} {fx['hg']}-{fx['ag']} {fx['away_name']}", None
     if next_kickoff:
         mins = (next_kickoff - now).total_seconds() / 60
@@ -860,8 +749,8 @@ def format_result(fx):
 def format_fixture(fx):
     now = datetime.now(timezone.utc)
     mins = round((fx['kickoff']-now).total_seconds()/60) if fx['kickoff'] else 9999
-    return {'home':fx['home'],'away':fx['away'],
-            'date':fx['date'],'stage':fx['stage'],'mins_until':mins}
+    return {'home':fx['home'],'away':fx['away'],'date':fx['date'],
+            'stage':fx['stage'],'mins_until':mins}
 
 # ── Main ──────────────────────────────────────────────────────────────
 def main():
@@ -874,22 +763,18 @@ def main():
     print('Fetching WC 2026 fixtures...')
     raw = fetch_fixtures()
     if not raw:
-        print('No fixtures returned — aborting')
-        sys.exit(0)
+        print('No fixtures returned — aborting'); sys.exit(0)
 
-    fixtures = []
-    unmapped = []
+    fixtures = []; unmapped = []
     for fx in raw:
         p = parse_fixture(fx)
-        if p['home'] and p['away']:
-            fixtures.append(p)
+        if p['home'] and p['away']: fixtures.append(p)
         else:
             h = fx.get('teams',{}).get('home',{}).get('name','?')
             a = fx.get('teams',{}).get('away',{}).get('name','?')
             unmapped.append(f'{h} vs {a}')
 
-    if unmapped:
-        print(f'  Unmapped teams: {unmapped[:5]}')
+    if unmapped: print(f'  Unmapped teams: {unmapped[:5]}')
 
     finished = [fx for fx in fixtures if fx['finished']]
     live_now = [fx for fx in fixtures if fx['live']]
@@ -897,7 +782,6 @@ def main():
                       key=lambda x: x['kickoff'])
 
     print(f'  Parsed: {len(fixtures)} | Finished: {len(finished)} | Live: {len(live_now)} | Upcoming: {len(upcoming)}')
-
     if finished:
         print('  Results so far:')
         for fx in finished:
@@ -917,12 +801,10 @@ def main():
         p = lp['prob']
         hn = BASE['teams'].get(lp['home'],{}).get('name',lp['home'])
         an = BASE['teams'].get(lp['away'],{}).get('name',lp['away'])
-        print(f"  In-play: {hn} {lp['hg']}-{lp['ag']} {an} @ {lp['minute']}' "
-              f"-> H:{p['home_win']}% D:{p['draw']}% A:{p['away_win']}%")
+        print(f"  In-play: {hn} {lp['hg']}-{lp['ag']} {an} @ {lp['minute']}' -> H:{p['home_win']}% D:{p['draw']}% A:{p['away_win']}%")
 
     enriched_results = add_predictions_to_results(
-        [format_result(fx) for fx in finished[-30:]], BASE['teams']
-    )
+        [format_result(fx) for fx in finished[-30:]], BASE['teams'])
 
     print('Fetching player stats...')
     player_stats = get_player_stats_cached()
@@ -940,40 +822,15 @@ def main():
     print('Running live tournament simulation (10,000 runs)...')
     sim_start = datetime.now(timezone.utc)
     live_sim, live_bracket = run_live_tournament_sims(
-        N=10000,
-        updated_teams=updated_teams,
-        base_groups=BASE['groups'],
-        finished_fixtures=finished,
-        r32_slots=BASE['bracket']['r32'],
+        N=10000, updated_teams=updated_teams, base_groups=BASE['groups'],
+        finished_fixtures=finished, r32_slots=BASE['bracket']['r32'],
     )
     sim_elapsed = (datetime.now(timezone.utc) - sim_start).total_seconds()
     print(f'  Simulation complete in {sim_elapsed:.1f}s')
 
-    # Validate Annex C — print warning if any impossible matchups detected
-    print('  Validating R32 bracket...')
-    ANNEX_C_CHECK = {
-        'B1':set('ABCDF'),'B2':set('CDFGH'),'B3':set('AEHIJ'),
-        'B4':set('BEFIJ'),'B5':set('CEFHI'),'B6':set('EHIJK'),
-        'B7':set('EFGIJ'),'B8':set('DEIJL'),
-    }
-    code_to_grp = {}
-    for grp, teams in BASE['groups'].items():
-        for t in teams:
-            code_to_grp[t['code']] = grp
-    for slot_entry in BASE['bracket']['r32']:
-        a_slot = slot_entry.get('away_slot','')
-        away = slot_entry.get('away')
-        if a_slot.startswith('B') and away:
-            grp = code_to_grp.get(away,'?')
-            allowed = ANNEX_C_CHECK.get(a_slot, set())
-            if grp not in allowed:
-                print(f'  ⚠️  {a_slot}: {away} (Group {grp}) not in allowed groups {allowed}')
-    print('  Bracket validation complete')
-
     live_ranked = sorted(
         [{'code': c, **live_sim[c]} for c in live_sim if c in updated_teams],
-        key=lambda x: -x['win']
-    )
+        key=lambda x: -x['win'])
 
     print('  Top 10 live win probabilities:')
     for r in live_ranked[:10]:
@@ -990,8 +847,7 @@ def main():
             'matches_completed': len(finished),
             'matches_live':      len(live_now),
             'matches_remaining': len(upcoming),
-            'live':              True,
-            'updating':          True,
+            'live': True, 'updating': True,
         },
         'teams':   updated_teams,
         'groups':  BASE['groups'],
@@ -1015,7 +871,7 @@ def main():
     }
 
     with open('olympus_live.json','w') as f:
-        json.dump(output,f,separators=(',',':'))
+        json.dump(output, f, separators=(',',':'))
 
     print(f'Wrote olympus_live.json ({os.path.getsize("olympus_live.json")//1024}KB)')
     print(f'Phase: {phase} | Results: {len(finished)} | Live: {len(live_now)}')
