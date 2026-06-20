@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: June 20, 2026 01:08 UTC · Phase: Group Stage · 30 matches played*
+*Auto-generated: June 20, 2026 01:10 UTC · Phase: Group Stage · 30 matches played*
 
 ---
 
@@ -7,27 +7,27 @@
 *Compare live model vs pre-tournament prediction*
 
 ### 🚀 Biggest Risers
-- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 16.6% (↑ +2.2%)
-- 🇦🇹 **Austria**: 1.3% → 1.87% (↑ +0.6%)
-- 🇸🇪 **Sweden**: 0.6% → 1.17% (↑ +0.6%)
-- 🇺🇸 **USA**: 1.5% → 2.03% (↑ +0.5%)
-- 🇧🇪 **Belgium**: 1.4% → 1.91% (↑ +0.5%)
+- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 16.06% (↑ +1.7%)
+- 🇦🇷 **Argentina**: 4.4% → 5.21% (↑ +0.8%)
+- 🇺🇸 **USA**: 1.5% → 2.3% (↑ +0.8%)
+- 🇧🇪 **Belgium**: 1.4% → 1.94% (↑ +0.5%)
+- 🇳🇴 **Norway**: 2.1% → 2.51% (↑ +0.4%)
 
 ### 📉 Biggest Fallers
-- 🇩🇪 **Germany**: 10.9% → 8.13% (↓ -2.8%)
-- 🇪🇸 **Spain**: 19.0% → 16.51% (↓ -2.5%)
-- 🇵🇹 **Portugal**: 14.9% → 13.05% (↓ -1.9%)
-- 🇫🇷 **France**: 11.8% → 10.69% (↓ -1.1%)
-- 🇭🇷 **Croatia**: 3.0% → 2.73% (↓ -0.3%)
+- 🇩🇪 **Germany**: 10.9% → 8.33% (↓ -2.6%)
+- 🇵🇹 **Portugal**: 14.9% → 12.8% (↓ -2.1%)
+- 🇫🇷 **France**: 11.8% → 10.62% (↓ -1.2%)
+- 🇪🇸 **Spain**: 19.0% → 17.87% (↓ -1.1%)
+- 🇧🇷 **Brazil**: 5.2% → 4.72% (↓ -0.5%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 16.6% to win · 43.98% to reach final · 68.9% semifinal
-2. 🇪🇸 **Spain** — 16.51% to win · 40.48% to reach final · 53.46% semifinal
-3. 🇵🇹 **Portugal** — 13.05% to win · 39.7% to reach final · 57.73% semifinal
-4. 🇫🇷 **France** — 10.69% to win · 29.8% to reach final · 43.23% semifinal
-5. 🇩🇪 **Germany** — 8.13% to win · 24.83% to reach final · 36.59% semifinal
+1. 🇪🇸 **Spain** — 17.87% to win · 41.88% to reach final · 54.58% semifinal
+2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 16.06% to win · 44.97% to reach final · 69.56% semifinal
+3. 🇵🇹 **Portugal** — 12.8% to win · 39.83% to reach final · 57.31% semifinal
+4. 🇫🇷 **France** — 10.62% to win · 29.35% to reach final · 43.82% semifinal
+5. 🇩🇪 **Germany** — 8.33% to win · 25.07% to reach final · 36.68% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
@@ -37,8 +37,8 @@
 ### 😱 Biggest Upsets (model got wrong)
 - 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.1% chance
 - 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.7% chance
-- 🇶🇦 Qatar 1–1 Switzerland 🇨🇭 · Model only gave this outcome 15.7% chance
-- 🇮🇷 Iran 2–2 New Zealand 🇳🇿 · Model only gave this outcome 18.7% chance
+- 🇶🇦 Qatar 1–1 Switzerland 🇨🇭 · Model only gave this outcome 15.6% chance
+- 🇮🇷 Iran 2–2 New Zealand 🇳🇿 · Model only gave this outcome 18.9% chance
 - 🇧🇷 Brazil 1–1 Morocco 🇲🇦 · Model only gave this outcome 21.2% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
@@ -63,13 +63,13 @@
 1. 🇨🇦 **J. David** — 3 goals, 0 assists
 2. 🇦🇷 **L. Messi** — 3 goals, 0 assists
 3. 🇺🇸 **F. Balogun** — 2 goals, 0 assists
-4. 🇲🇦 **I. Saibari** — 2 goals, 0 assists
-5. 🇨🇭 **J. Manzambi** — 2 goals, 0 assists
-6. 🇩🇪 **K. Havertz** — 2 goals, 0 assists
-7. 🇨🇦 **C. Larin** — 2 goals, 0 assists
-8. 🇫🇷 **Kylian Mbappé** — 2 goals, 0 assists
-9. 🇳🇿 **E. Just** — 2 goals, 0 assists
-10. 🇸🇪 **Y. Ayari** — 2 goals, 0 assists
+4. 🇧🇷 **Matheus Cunha** — 2 goals, 0 assists
+5. 🇲🇦 **I. Saibari** — 2 goals, 0 assists
+6. 🇨🇭 **J. Manzambi** — 2 goals, 0 assists
+7. 🇩🇪 **K. Havertz** — 2 goals, 0 assists
+8. 🇨🇦 **C. Larin** — 2 goals, 0 assists
+9. 🇫🇷 **Kylian Mbappé** — 2 goals, 0 assists
+10. 🇳🇿 **E. Just** — 2 goals, 0 assists
 
 ## 📊 Group Stage Snapshot
 
@@ -154,9 +154,9 @@
 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England are the biggest movers in our World Cup model.
 
 Pre-tournament win probability: 14.4%
-After 30 matches: 16.6%
+After 30 matches: 16.06%
 
-That's a +2.2% swing based on real match data.
+That's a +1.7% swing based on real match data.
 
 Our model updates after every game using Poisson simulation
 & Bayesian score adjustment. 10,000 simulations per update.
@@ -184,8 +184,8 @@ That's football. The model learns and adapts after every game.
 1. 🇨🇦 J. David — 3G 0A
 2. 🇦🇷 L. Messi — 3G 0A
 3. 🇺🇸 F. Balogun — 2G 0A
-4. 🇲🇦 I. Saibari — 2G 0A
-5. 🇨🇭 J. Manzambi — 2G 0A
+4. 🇧🇷 Matheus Cunha — 2G 0A
+5. 🇲🇦 I. Saibari — 2G 0A
 
 #WC2026 #WorldCup2026 #GoldenBoot #Football #ProjectOlympus
 ```
