@@ -30,4 +30,5 @@ jobs:
           git config user.email "bot@projectolympus"
           git add olympus_live.json cache_players.json cache_events.json cache_lineups.json content_ideas.md
           git diff --staged --quiet || git commit -m "Live update $(date -u '+%H:%M:%S UTC')"
+          git pull --rebase
           git push
