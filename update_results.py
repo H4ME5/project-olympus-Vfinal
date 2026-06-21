@@ -415,7 +415,9 @@ def simulate_group(codes, teams, known_results):
             if hg > ag: pts[h] += 3
             elif ag > hg: pts[a] += 3
             else: pts[h] += 1; pts[a] += 1
-    return sorted(codes, key=lambda c: (-pts[c], -gd[c], -gf_[c]))
+    standing = sorted(codes, key=lambda c: (-pts[c], -gd[c], -gf_[c]))
+    stats = {c: {'pts': pts[c], 'gd': gd[c], 'gf': gf_[c]} for c in codes}
+    return standing, stats
 
 def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r32_slots):
     group_results = defaultdict(list)
@@ -441,25 +443,33 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
     sf_winner_counts  = defaultdict(lambda: defaultdict(int))
     final_winner_counts = defaultdict(int)
 
-    # ── NEW: track most likely 3rd-place team per group ──────────────
-    # third_place_counts[grp][code] = number of sims where code finished 3rd in grp
-    third_place_counts = defaultdict(lambda: defaultdict(int))
+    # ── Track actual B-slot assignments per sim for display ─────────
+    # Uses real FIFA tiebreakers: pts → gd → gf → model score
+    # Only teams that genuinely qualified as top-8 thirds appear.
+    b_slot_counts = defaultdict(lambda: defaultdict(int))
+    # Also track which group each team came from when occupying a B-slot
+    b_slot_team_group = {}  # (slot, code) -> grp
 
     for _ in range(N):
         # ── Group stage ────────────────────────────────────────────
         group_standings = {}; all_thirds = []
         for grp, teams in base_groups.items():
             codes = [t['code'] for t in teams]
-            standing = simulate_group(codes, updated_teams, group_results[grp])
+            standing, grp_stats = simulate_group(codes, updated_teams, group_results[grp])
             group_standings[grp] = standing
             third_code = standing[2]
-            third_place_counts[grp][third_code] += 1
+            s = grp_stats[third_code]
             all_thirds.append({
                 'code': third_code, 'grp': grp,
+                'pts': s['pts'], 'gd': s['gd'], 'gf': s['gf'],
                 'score': updated_teams.get(third_code, {}).get('score', 0),
             })
 
-        b8 = sorted(all_thirds, key=lambda t: -t['score'])[:8]
+        # FIFA tiebreaker order: pts → gd → gf → model score
+        b8 = sorted(all_thirds, key=lambda t: (
+            -t['pts'], -t['gd'], -t['gf'], -t['score']
+        ))[:8]
+
         for grp, standing in group_standings.items():
             advs[standing[0]] += 1; advs[standing[1]] += 1
             if standing[2] in {t['code'] for t in b8}: advs[standing[2]] += 1
@@ -471,7 +481,13 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
 
         b_assigned = assign_annex_c(b8)
         for slot, code in b_assigned.items():
-            if code: slot_map[slot] = code
+            if code:
+                slot_map[slot] = code
+                b_slot_counts[slot][code] += 1  # track actual B-slot occupancy
+                # Record which group this team came from
+                b_slot_team_group[(slot, code)] = next(
+                    (t['grp'] for t in b8 if t['code'] == code), None
+                )
 
         # ── R32 ────────────────────────────────────────────────────
         r32_winners = []
@@ -604,59 +620,32 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
 
     # ── Resolve most likely team per slot for R32 display ────────────
     #
-    # FIX: B-slots (third-place slots) must use the most likely actual
-    # 3rd-place team from each eligible group, NOT raw slot appearance
-    # counts. Raw appearances were incorrectly promoting teams whose
-    # modal position is 1st or 2nd (e.g. URU showing as a third-placer
-    # despite 61% chance of finishing 2nd in Group H).
-    #
-    # For each B-slot, we:
-    #   1. Find the eligible groups per Annex C
-    #   2. For each eligible group, find the most likely 3rd-place team
-    #   3. Rank those candidates by their score (same as assign_annex_c)
-    #   4. Assign greedily, no team used twice
-
-    def resolve_b_slots(base_groups, updated_teams, third_place_counts, N):
-        """
-        For each B1-B8 slot, determine the most likely third-place team
-        using per-group third-place frequency counts rather than slot
-        appearance counts.
-        Returns dict: {'B1': {'code': ..., 'pct': ...}, ...}
-        """
-        # For each group, find the most likely 3rd-place team and their pct
-        most_likely_third = {}
-        for grp in base_groups:
-            counts = third_place_counts[grp]
-            if not counts:
-                continue
-            best_code = max(counts, key=counts.get)
-            best_pct = round(counts[best_code] / N * 100, 1)
-            most_likely_third[grp] = {'code': best_code, 'pct': best_pct,
-                                       'score': updated_teams.get(best_code, {}).get('score', 0)}
-
-        # Now assign to B-slots using Annex C rules, greedy, no repeat
-        assigned = {}
+    # ── B-slot display from actual sim occupancy (FIFA tiebreakers applied) ─
+    # b_slot_counts[slot][code] = sims where code actually occupied that B-slot.
+    # Deduplication: once a team is assigned to a slot, it can't appear in another.
+    def resolve_b_slot_display(b_slot_counts, b_slot_team_group, N):
+        result = {}
         used_codes = set()
-        for i, slot_groups_str in enumerate(ANNEX_C_SLOTS):
-            slot = f"B{i+1}"
-            allowed_groups = list(slot_groups_str[1:])
-            # Candidates: most likely 3rd from each allowed group, sorted by score desc
-            candidates = []
-            for grp in allowed_groups:
-                if grp in most_likely_third:
-                    c = most_likely_third[grp]
-                    if c['code'] not in used_codes:
-                        candidates.append({'grp': grp, **c})
-            candidates.sort(key=lambda x: -x['score'])
-            if candidates:
-                winner = candidates[0]
-                assigned[slot] = {'code': winner['code'], 'pct': winner['pct']}
-                used_codes.add(winner['code'])
+        used_groups = set()
+        for slot in [f"B{i+1}" for i in range(8)]:
+            counts = b_slot_counts.get(slot, {})
+            # Filter out already-used teams AND teams from already-used groups
+            filtered = {
+                code: cnt for code, cnt in counts.items()
+                if code not in used_codes
+                and b_slot_team_group.get((slot, code)) not in used_groups
+            }
+            if filtered:
+                best = max(filtered, key=filtered.get)
+                best_grp = b_slot_team_group.get((slot, best))
+                result[slot] = {'code': best, 'pct': round(counts[best] / N * 100, 1)}
+                used_codes.add(best)
+                if best_grp: used_groups.add(best_grp)
             else:
-                assigned[slot] = None
-        return assigned
+                result[slot] = None
+        return result
 
-    b_slot_display = resolve_b_slots(base_groups, updated_teams, third_place_counts, N)
+    b_slot_display = resolve_b_slot_display(b_slot_counts, b_slot_team_group, N)
 
     # ── Build R32 cards ───────────────────────────────────────────────
     # For non-B slots (1X, 2X): use top2_appearances exactly as original —
