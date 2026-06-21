@@ -970,25 +970,28 @@ function renderLive(){
     html += '<div style="overflow-x:auto"><table class="rtable"><thead><tr>';
     html += '<th>#</th><th>Team</th><th>Live WIN%</th><th></th><th>Change</th><th>Final%</th><th>SF%</th><th>Status</th>';
     html += '</tr></thead><tbody>';
-    var lranked=LIVE.ranked.slice().sort(function(a,b){return b.win-a.win;});
-    var eliminated=(live&&live.eliminated)||[];
-    for(var i=0;i<lranked.length;i++){
-      var r=lranked[i],t=LIVE.teams[r.code],orig=D.teams[r.code];
-      if(!t||!orig) continue;
-      var delta=parseFloat((r.win-orig.winner).toFixed(1));
-      var arrow=delta>0?'↑':delta<0?'↓':'→';
-      var deltaCol=delta>0?'color:var(--grass)':delta<0?'color:var(--red)':'color:var(--muted)';
-      var isElim=eliminated.indexOf(r.code)>=0;
-      var bw=lranked[0].win>0?Math.round(r.win/lranked[0].win*100):0;
-      html+='<tr class="'+(i<3&&!isElim?'top3':'')+'" style="'+(isElim?'opacity:.35':'')+'"><td>'+(i+1)+'</td>';
-      html+='<td><span class="cdot" style="background:'+(CC[t.conf]||'#888')+'"></span><strong>'+t.name+'</strong></td>';
-      html+='<td class="mono" style="font-weight:700">'+(isElim?'<span style="color:var(--red)">OUT</span>':r.win+'%')+'</td>';
-      html+='<td class="barcell"><div class="bar" style="width:'+bw+'%"></div></td>';
-      html+='<td class="mono" style="'+deltaCol+'">'+arrow+' '+(delta>=0?'+':'')+delta+'% <span style="color:var(--muted);font-size:.7rem">('+orig.winner+'%)</span></td>';
-      html+='<td class="mono">'+r.final+'%</td><td class="mono">'+r.sf+'%</td>';
-      html+='<td class="sans" style="font-size:.72rem;font-weight:600;color:'+(isElim?'var(--red)':'var(--grass)')+'">'+
-            (isElim?'Eliminated':'Active')+'</td></tr>';
-    }
+var lranked=(LIVE.live.live_ranked||[]).slice().sort(function(a,b){return b.win-a.win;});
+var eliminated=(live&&live.eliminated)||[];
+for(var i=0;i<lranked.length;i++){
+  var r=lranked[i],t=LIVE.teams[r.code],orig=D.teams[r.code];
+  if(!t||!orig) continue;
+  var baseRank=null;
+  for(var bi=0;bi<LIVE.ranked.length;bi++){if(LIVE.ranked[bi].code===r.code){baseRank=LIVE.ranked[bi];break;}}
+  var baseWin=baseRank?baseRank.win:orig.winner;
+  var delta=parseFloat((r.win-baseWin).toFixed(1));
+  var arrow=delta>0?'↑':delta<0?'↓':'→';
+  var deltaCol=delta>0?'color:var(--grass)':delta<0?'color:var(--red)':'color:var(--muted)';
+  var isElim=eliminated.indexOf(r.code)>=0;
+  var bw=lranked[0].win>0?Math.round(r.win/lranked[0].win*100):0;
+  html+='<tr class="'+(i<3&&!isElim?'top3':'')+'" style="'+(isElim?'opacity:.35':'')+'"><td>'+(i+1)+'</td>';
+  html+='<td><span class="cdot" style="background:'+(CC[t.conf]||'#888')+'"></span><strong>'+t.name+'</strong></td>';
+  html+='<td class="mono" style="font-weight:700">'+(isElim?'<span style="color:var(--red)">OUT</span>':r.win+'%')+'</td>';
+  html+='<td class="barcell"><div class="bar" style="width:'+bw+'%"></div></td>';
+  html+='<td class="mono" style="'+deltaCol+'">'+arrow+' '+(delta>=0?'+':'')+delta+'% <span style="color:var(--muted);font-size:.7rem">('+baseWin+'%)</span></td>';
+  html+='<td class="mono">'+r.final+'%</td><td class="mono">'+r.sf+'%</td>';
+  html+='<td class="sans" style="font-size:.72rem;font-weight:600;color:'+(isElim?'var(--red)':'var(--grass)')+'">'+
+        (isElim?'Eliminated':'Active')+'</td></tr>';
+}
     html+='</tbody></table></div>';
   }
 
