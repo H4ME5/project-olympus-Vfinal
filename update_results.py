@@ -658,40 +658,40 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
 
     b_slot_display = resolve_b_slots(base_groups, updated_teams, third_place_counts, N)
 
-    # ── Build R32 slot→team lookup for display ────────────────────────
-    # For non-B slots (1X, 2X), use top2_appearances as before.
-    # For B slots, use b_slot_display.
+    # ── Build R32 cards ───────────────────────────────────────────────
+    # For non-B slots (1X, 2X): use top2_appearances exactly as original —
+    #   home = most frequent team, away = second most frequent team.
+    # For B slots: use b_slot_display (modal 3rd-place per group via Annex C).
 
-    # Map r32_slots index to slot strings
-    r32_slot_strings = [(slot['home_slot'], slot['away_slot']) for slot in r32_slots]
-
-    def resolve_r32_side(slot_str, slot_appearances, slot_idx, b_slot_display):
-        """Resolve a single side of an R32 matchup for display."""
-        if slot_str.startswith('B'):
-            entry = b_slot_display.get(slot_str)
-            if entry:
-                return {'code': entry['code'], 'pct': entry['pct']}
-            return None
-        else:
-            # 1X or 2X slot — use appearance counts
-            d = slot_appearances[slot_idx]
-            if not d: return None
-            best = max(d, key=d.get)
-            return {'code': best, 'pct': round(d[best] / N * 100, 1)}
-
-    # Build R32 cards
     r32_cards = []
     for i, slot in enumerate(r32_slots):
         h_str = slot['home_slot']
         a_str = slot['away_slot']
-        h_display = resolve_r32_side(h_str, r32_slot_appearances, i, b_slot_display)
-        a_display  = resolve_r32_side(a_str, r32_slot_appearances, i, b_slot_display)
-        h_code = h_display['code'] if h_display else None
-        a_code = a_display['code'] if a_display else None
+
+        # Resolve home side
+        if h_str.startswith('B'):
+            entry = b_slot_display.get(h_str)
+            h_code = entry['code'] if entry else None
+            h_pct  = entry['pct']  if entry else 0.0
+        else:
+            h_team, _ = top2_appearances(r32_slot_appearances, i)
+            h_code = h_team['code'] if h_team else None
+            h_pct  = h_team['pct']  if h_team else 0.0
+
+        # Resolve away side
+        if a_str.startswith('B'):
+            entry = b_slot_display.get(a_str)
+            a_code = entry['code'] if entry else None
+            a_pct  = entry['pct']  if entry else 0.0
+        else:
+            _, a_team = top2_appearances(r32_slot_appearances, i)
+            a_code = a_team['code'] if a_team else None
+            a_pct  = a_team['pct']  if a_team else 0.0
+
         card = make_card(f'R32_{i+1}', h_code, a_code, updated_teams)
-        # Overwrite pct with display pct (appearance % for 1X/2X, third-place % for B)
-        if h_display and card.get('home'): card['home']['pct'] = h_display['pct']
-        if a_display and card.get('away'): card['away']['pct'] = a_display['pct']
+        # Overwrite pct with appearance/third-place display pct
+        if card.get('home'): card['home']['pct'] = h_pct
+        if card.get('away'): card['away']['pct'] = a_pct
         r32_cards.append(card)
 
     # R16: winner of R32[2i] vs winner of R32[2i+1] — deterministic chain
