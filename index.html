@@ -1084,11 +1084,13 @@ for(var i=0;i<lranked.length;i++){
           html+='</div>';
           html+='<div style="text-align:center;padding:.25rem .6rem;background:var(--bg);font-family:Arial,sans-serif;font-size:.65rem;color:var(--muted);border-top:1px solid var(--border)">';
           html+='Predicted: '+hname.split(" ")[0]+' '+Math.round(pred.exp_home)+' \u2013 '+Math.round(pred.exp_away)+' '+aname.split(" ")[0];
-          html+='</div>';
+   html+='</div>';
         }
       }
       html+='</div>';
       shown++;
+    }
+    html+='</div>';
   }
 
   if(!html){
