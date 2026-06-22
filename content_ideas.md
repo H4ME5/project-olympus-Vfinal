@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: June 22, 2026 03:00 UTC · Phase: Group Stage · 39 matches played*
+*Auto-generated: June 22, 2026 03:02 UTC · Phase: Group Stage · 40 matches played*
 
 ---
 
@@ -7,39 +7,39 @@
 *Compare live model vs pre-tournament prediction*
 
 ### 🚀 Biggest Risers
-- 🇦🇷 **Argentina**: 4.4% → 5.59% (↑ +1.2%)
-- 🇺🇸 **USA**: 1.5% → 2.25% (↑ +0.8%)
-- 🇳🇴 **Norway**: 2.1% → 2.8% (↑ +0.7%)
-- 🇳🇱 **Netherlands**: 1.6% → 2.22% (↑ +0.6%)
-- 🇨🇭 **Switzerland**: 3.1% → 3.69% (↑ +0.6%)
+- 🇦🇷 **Argentina**: 4.4% → 5.92% (↑ +1.5%)
+- 🇺🇸 **USA**: 1.5% → 2.67% (↑ +1.2%)
+- 🇨🇭 **Switzerland**: 3.1% → 3.94% (↑ +0.8%)
+- 🇦🇹 **Austria**: 1.3% → 1.92% (↑ +0.6%)
+- 🇲🇦 **Morocco**: 0.5% → 1.09% (↑ +0.6%)
 
 ### 📉 Biggest Fallers
-- 🇵🇹 **Portugal**: 14.9% → 12.15% (↓ -2.8%)
-- 🇩🇪 **Germany**: 10.9% → 8.73% (↓ -2.2%)
-- 🇪🇸 **Spain**: 19.0% → 17.74% (↓ -1.3%)
-- 🇧🇷 **Brazil**: 5.2% → 4.66% (↓ -0.5%)
-- 🇫🇷 **France**: 11.8% → 11.33% (↓ -0.5%)
+- 🇩🇪 **Germany**: 10.9% → 8.77% (↓ -2.1%)
+- 🇵🇹 **Portugal**: 14.9% → 12.78% (↓ -2.1%)
+- 🇪🇸 **Spain**: 19.0% → 17.42% (↓ -1.6%)
+- 🇫🇷 **France**: 11.8% → 10.77% (↓ -1.0%)
+- 🇧🇷 **Brazil**: 5.2% → 4.77% (↓ -0.4%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🇪🇸 **Spain** — 17.74% to win · 41.88% to reach final · 54.01% semifinal
-2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 14.76% to win · 42.78% to reach final · 65.22% semifinal
-3. 🇵🇹 **Portugal** — 12.15% to win · 37.93% to reach final · 55.07% semifinal
-4. 🇫🇷 **France** — 11.33% to win · 31.45% to reach final · 46.03% semifinal
-5. 🇩🇪 **Germany** — 8.73% to win · 27.16% to reach final · 40.17% semifinal
+1. 🇪🇸 **Spain** — 17.42% to win · 41.56% to reach final · 54.42% semifinal
+2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 14.44% to win · 43.3% to reach final · 65.6% semifinal
+3. 🇵🇹 **Portugal** — 12.78% to win · 37.67% to reach final · 55.16% semifinal
+4. 🇫🇷 **France** — 10.77% to win · 31.6% to reach final · 47.44% semifinal
+5. 🇩🇪 **Germany** — 8.77% to win · 27.13% to reach final · 39.38% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
-- **Correct predictions:** 16/30 matches (53.3%)
-- **Upsets called wrong:** 14
+- **Correct predictions:** 17/30 matches (56.7%)
+- **Upsets called wrong:** 13
 
 ### 😱 Biggest Upsets (model got wrong)
 - 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.1% chance
-- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.6% chance
-- 🇮🇷 Iran 2–2 New Zealand 🇳🇿 · Model only gave this outcome 19.0% chance
-- 🇧🇪 Belgium 0–0 Iran 🇮🇷 · Model only gave this outcome 20.2% chance
-- 🇺🇾 Uruguay 2–2 Cape Verde 🇨🇻 · Model only gave this outcome 22.4% chance
+- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.9% chance
+- 🇮🇷 Iran 2–2 New Zealand 🇳🇿 · Model only gave this outcome 18.9% chance
+- 🇧🇪 Belgium 0–0 Iran 🇮🇷 · Model only gave this outcome 20.0% chance
+- 🇺🇾 Uruguay 2–2 Cape Verde 🇨🇻 · Model only gave this outcome 22.6% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
 *form_nudge = score adjustment based on actual vs predicted goals*
@@ -110,10 +110,10 @@
      🇹🇳 Tunisia: 0pts · GD -8 · 2P
 
 **Group G**
+  → 🇪🇬 Egypt: 4pts · GD +2 · 2P
   → 🇮🇷 Iran: 2pts · GD +0 · 2P
-  → 🇧🇪 Belgium: 2pts · GD +0 · 2P
-     🇳🇿 New Zealand: 1pts · GD +0 · 1P
-     🇪🇬 Egypt: 1pts · GD +0 · 1P
+     🇧🇪 Belgium: 2pts · GD +0 · 2P
+     🇳🇿 New Zealand: 1pts · GD -2 · 2P
 
 **Group H**
   → 🇪🇸 Spain: 4pts · GD +4 · 2P
@@ -154,9 +154,9 @@
 🇦🇷 Argentina are the biggest movers in our World Cup model.
 
 Pre-tournament win probability: 4.4%
-After 39 matches: 5.59%
+After 40 matches: 5.92%
 
-That's a +1.2% swing based on real match data.
+That's a +1.5% swing based on real match data.
 
 Our model updates after every game using Poisson simulation
 & Bayesian score adjustment. 10,000 simulations per update.
@@ -166,8 +166,8 @@ Our model updates after every game using Poisson simulation
 
 ### Caption 2 — Model Accuracy
 ```
-📊 39 matches played at WC2026.
-Our model predicted the correct outcome in 16/30 (53.3%).
+📊 40 matches played at WC2026.
+Our model predicted the correct outcome in 17/30 (56.7%).
 
 Biggest miss: 🇪🇸 Spain 0–0 Cape Verde 🇨🇻
 We only gave that result a 2.1% chance.
@@ -179,7 +179,7 @@ That's football. The model learns and adapts after every game.
 
 ### Caption 3 — Golden Boot
 ```
-⚽ Golden Boot race at WC2026 — matchday 39 update
+⚽ Golden Boot race at WC2026 — matchday 40 update
 
 1. 🇩🇪 D. Undav — 3G 2A
 2. 🇨🇦 J. David — 3G 0A
