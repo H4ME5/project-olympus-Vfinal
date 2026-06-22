@@ -1074,10 +1074,21 @@ for(var i=0;i<lranked.length;i++){
       html+='<div class="fixture-card">';
       html+='<div class="fx-teams">'+flag(fx.home)+' '+hname+'<span class="fx-vs">vs</span>'+aname+' '+flag(fx.away)+'</div>';
       html+='<div class="fx-date">'+toCT(fx.date)+(fx.stage?' · '+fx.stage.replace(/_/g,' '):'')+'</div>';
+      if(D.teams[fx.home]&&D.teams[fx.away]){
+        var pred=computePreMatchPred(fx.home,fx.away);
+        if(pred){
+          html+='<div style="display:flex;justify-content:space-between;padding:.4rem .6rem;background:var(--bg);border-top:1px dashed var(--border);font-family:Arial,sans-serif;font-size:.68rem;color:var(--muted)">';
+          html+='<span style="color:var(--grass);font-weight:700">'+hname.split(" ")[0]+' '+pred.home_win+'%</span>';
+          html+='<span>Draw '+pred.draw+'%</span>';
+          html+='<span style="color:var(--red);font-weight:700">'+aname.split(" ")[0]+' '+pred.away_win+'%</span>';
+          html+='</div>';
+          html+='<div style="text-align:center;padding:.25rem .6rem;background:var(--bg);font-family:Arial,sans-serif;font-size:.65rem;color:var(--muted);border-top:1px solid var(--border)">';
+          html+='Predicted: '+hname.split(" ")[0]+' '+Math.round(pred.exp_home)+' \u2013 '+Math.round(pred.exp_away)+' '+aname.split(" ")[0];
+          html+='</div>';
+        }
+      }
       html+='</div>';
       shown++;
-    }
-    html+='</div>';
   }
 
   if(!html){
