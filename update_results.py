@@ -653,6 +653,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
     # For B slots: use b_slot_display (modal 3rd-place per group via Annex C).
 
     r32_cards = []
+    used_r32_codes = set()
     for i, slot in enumerate(r32_slots):
         h_str = slot['home_slot']
         a_str = slot['away_slot']
@@ -663,9 +664,17 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             h_code = entry['code'] if entry else None
             h_pct  = entry['pct']  if entry else 0.0
         else:
-            h_team, _ = top2_appearances(r32_slot_appearances, i)
-            h_code = h_team['code'] if h_team else None
-            h_pct  = h_team['pct']  if h_team else 0.0
+            # Pick most frequent team not already used in another slot
+            d = r32_slot_appearances[i]
+            sorted_teams = sorted(d.items(), key=lambda x: -x[1])
+            h_code, h_pct = None, 0.0
+            for code, cnt in sorted_teams:
+                if code not in used_r32_codes:
+                    h_code = code
+                    h_pct = round(cnt / N * 100, 1)
+                    break
+
+        if h_code: used_r32_codes.add(h_code)
 
         # Resolve away side
         if a_str.startswith('B'):
@@ -673,9 +682,17 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             a_code = entry['code'] if entry else None
             a_pct  = entry['pct']  if entry else 0.0
         else:
-            _, a_team = top2_appearances(r32_slot_appearances, i)
-            a_code = a_team['code'] if a_team else None
-            a_pct  = a_team['pct']  if a_team else 0.0
+            # Pick most frequent team not already used in another slot
+            d = r32_slot_appearances[i]
+            sorted_teams = sorted(d.items(), key=lambda x: -x[1])
+            a_code, a_pct = None, 0.0
+            for code, cnt in sorted_teams:
+                if code not in used_r32_codes:
+                    a_code = code
+                    a_pct = round(cnt / N * 100, 1)
+                    break
+
+        if a_code: used_r32_codes.add(a_code)
 
         card = make_card(f'R32_{i+1}', h_code, a_code, updated_teams)
         # Overwrite pct with appearance/third-place display pct
