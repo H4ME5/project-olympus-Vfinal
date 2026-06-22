@@ -29,6 +29,14 @@ jobs:
           git config user.name  "Olympus Bot"
           git config user.email "bot@projectolympus"
           git add olympus_live.json cache_players.json cache_events.json cache_lineups.json content_ideas.md
-          git diff --staged --quiet || git commit -m "Live update $(date -u '+%H:%M:%S UTC')"
-          git pull --rebase
-          git push
+          git diff --staged --quiet && exit 0
+          git commit -m "Live update $(date -u '+%H:%M:%S UTC')"
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --soft origin/main
+            git add olympus_live.json cache_players.json cache_events.json cache_lineups.json content_ideas.md
+            git commit -m "Live update $(date -u '+%H:%M:%S UTC')" --allow-empty
+            git push origin main && break
+            echo "Retry $i failed, sleeping..."
+            sleep $((i * 5))
+          done
