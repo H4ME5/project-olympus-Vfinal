@@ -1122,14 +1122,9 @@ function renderDailyReport(){
   results.forEach(function(r){
     if(!r.prediction) return;
     totalPlayed++;
-    var p=r.prediction;
-    var hw=p.home_win,dr=p.draw,aw=p.away_win;
-    var predWinner=dr>=hw&&dr>=aw?'draw':hw>=aw?'home':'away';
+    var predWinner=r.prediction.home_win>r.prediction.away_win?(r.prediction.home_win>r.prediction.draw?'home':'draw'):(r.prediction.away_win>r.prediction.draw?'away':'draw');
     var actualWinner=r.hg>r.ag?'home':r.ag>r.hg?'away':'draw';
-    var predH=Math.round(p.exp_home),predA=Math.round(p.exp_away);
-    var scoreMatch=(predH===r.hg&&predA===r.ag);
-    var outcomeMatch=(predWinner===actualWinner);
-    if(outcomeMatch||scoreMatch) totalCorrect++;
+    if(predWinner===actualWinner) totalCorrect++;
   });
 
   // Movers
