@@ -652,50 +652,78 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
     #   home = most frequent team, away = second most frequent team.
     # For B slots: use b_slot_display (modal 3rd-place per group via Annex C).
 
-    r32_cards = []
-    used_r32_codes = set()
-    for i, slot in enumerate(r32_slots):
-        h_str = slot['home_slot']
-        a_str = slot['away_slot']
+    # ── Two-pass R32 display resolution ─────────────────────────────
+    # Pass 1: resolve all non-B slots to find which teams are used
+    # Pass 2: resolve B slots excluding teams already used in non-B slots
+    # This prevents e.g. SEN appearing as both 1G (non-B) and B3 (B-slot)
 
-        # Resolve home side
+    # Pass 1: collect non-B slot assignments
+    non_b_codes = set()
+    non_b_resolved = {}  # slot_idx -> (h_code, h_pct, a_code, a_pct)
+    temp_used = set()
+    for i, slot in enumerate(r32_slots):
+        h_str = slot['home_slot']; a_str = slot['away_slot']
+        h_code, h_pct, a_code, a_pct = None, 0.0, None, 0.0
+        if not h_str.startswith('B'):
+            d = r32_slot_appearances[i]
+            for code, cnt in sorted(d.items(), key=lambda x: -x[1]):
+                if code not in temp_used:
+                    h_code = code; h_pct = round(cnt/N*100,1); break
+            if h_code: temp_used.add(h_code); non_b_codes.add(h_code)
+        if not a_str.startswith('B'):
+            d = r32_slot_appearances[i]
+            for code, cnt in sorted(d.items(), key=lambda x: -x[1]):
+                if code not in temp_used:
+                    a_code = code; a_pct = round(cnt/N*100,1); break
+            if a_code: temp_used.add(a_code); non_b_codes.add(a_code)
+        non_b_resolved[i] = (h_code, h_pct, a_code, a_pct)
+
+    # Pass 2: resolve B-slot display excluding non-B codes
+    def resolve_b_slot_display_v2(b_slot_counts, b_slot_team_group, N, exclude_codes):
+        result = {}
+        used_codes = set(exclude_codes)  # start with non-B codes already used
+        used_groups = set()
+        for slot in [f"B{i+1}" for i in range(8)]:
+            counts = b_slot_counts.get(slot, {})
+            filtered = {
+                code: cnt for code, cnt in counts.items()
+                if code not in used_codes
+                and b_slot_team_group.get((slot, code)) not in used_groups
+            }
+            if filtered:
+                best = max(filtered, key=filtered.get)
+                best_grp = b_slot_team_group.get((slot, best))
+                result[slot] = {'code': best, 'pct': round(counts[best] / N * 100, 1)}
+                used_codes.add(best)
+                if best_grp: used_groups.add(best_grp)
+            else:
+                result[slot] = None
+        return result
+
+    b_slot_display = resolve_b_slot_display_v2(b_slot_counts, b_slot_team_group, N, non_b_codes)
+
+    # Pass 3: build R32 cards combining non-B and B resolutions
+    r32_cards = []
+    used_r32_codes = set(non_b_codes)
+    for i, slot in enumerate(r32_slots):
+        h_str = slot['home_slot']; a_str = slot['away_slot']
+        nb_h, nb_h_pct, nb_a, nb_a_pct = non_b_resolved[i]
+
         if h_str.startswith('B'):
             entry = b_slot_display.get(h_str)
             h_code = entry['code'] if entry else None
             h_pct  = entry['pct']  if entry else 0.0
         else:
-            # Pick most frequent team not already used in another slot
-            d = r32_slot_appearances[i]
-            sorted_teams = sorted(d.items(), key=lambda x: -x[1])
-            h_code, h_pct = None, 0.0
-            for code, cnt in sorted_teams:
-                if code not in used_r32_codes:
-                    h_code = code
-                    h_pct = round(cnt / N * 100, 1)
-                    break
+            h_code, h_pct = nb_h, nb_h_pct
 
-        if h_code: used_r32_codes.add(h_code)
-
-        # Resolve away side
         if a_str.startswith('B'):
             entry = b_slot_display.get(a_str)
             a_code = entry['code'] if entry else None
             a_pct  = entry['pct']  if entry else 0.0
         else:
-            # Pick most frequent team not already used in another slot
-            d = r32_slot_appearances[i]
-            sorted_teams = sorted(d.items(), key=lambda x: -x[1])
-            a_code, a_pct = None, 0.0
-            for code, cnt in sorted_teams:
-                if code not in used_r32_codes:
-                    a_code = code
-                    a_pct = round(cnt / N * 100, 1)
-                    break
-
-        if a_code: used_r32_codes.add(a_code)
+            a_code, a_pct = nb_a, nb_a_pct
 
         card = make_card(f'R32_{i+1}', h_code, a_code, updated_teams)
-        # Overwrite pct with appearance/third-place display pct
         if card.get('home'): card['home']['pct'] = h_pct
         if card.get('away'): card['away']['pct'] = a_pct
         r32_cards.append(card)
