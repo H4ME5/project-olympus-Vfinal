@@ -966,7 +966,7 @@ def main():
         print(f"  In-play: {hn} {lp['hg']}-{lp['ag']} {an} @ {lp['minute']}' -> H:{p['home_win']}% D:{p['draw']}% A:{p['away_win']}%")
 
     enriched_results = add_predictions_to_results(
-        [format_result(fx) for fx in finished[-30:]], BASE['teams'])
+        [format_result(fx) for fx in finished[-100:]], BASE['teams'])
 
     print('Fetching player stats...')
     player_stats = get_player_stats_cached()
