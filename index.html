@@ -1167,9 +1167,13 @@ function renderDailyReport(){
     matches.forEach(function(r){
       if(!r.prediction) return;
       stagePlayed++;
-      var predWinner=r.prediction.home_win>r.prediction.away_win?(r.prediction.home_win>r.prediction.draw?'home':'draw'):(r.prediction.away_win>r.prediction.draw?'away':'draw');
-      var actualWinner=r.hg>r.ag?'home':r.ag>r.hg?'away':'draw';
-      if(predWinner===actualWinner) stageCorrect++;
+     var p2=r.prediction;
+var hw2=p2.home_win,dr2=p2.draw,aw2=p2.away_win;
+var predWinner=dr2>=hw2&&dr2>=aw2?'draw':hw2>=aw2?'home':'away';
+var actualWinner=r.hg>r.ag?'home':r.ag>r.hg?'away':'draw';
+var predH2=Math.round(p2.exp_home),predA2=Math.round(p2.exp_away);
+var scoreMatch2=(predH2===r.hg&&predA2===r.ag);
+if(predWinner===actualWinner||scoreMatch2) stageCorrect++;
       // Upset = model was very confident but wrong
       var confidence=Math.max(r.prediction.home_win,r.prediction.away_win,r.prediction.draw);
       if(predWinner!==actualWinner&&confidence>maxUpsetConf){maxUpsetConf=confidence;biggestUpset=r;}
