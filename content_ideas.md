@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: June 23, 2026 01:16 UTC · Phase: Group Stage · 42 matches played*
+*Auto-generated: June 23, 2026 01:18 UTC · Phase: Group Stage · 42 matches played*
 
 ---
 
@@ -7,27 +7,27 @@
 *Compare live model vs pre-tournament prediction*
 
 ### 🚀 Biggest Risers
-- 🇦🇷 **Argentina**: 4.4% → 6.56% (↑ +2.2%)
-- 🇺🇸 **USA**: 1.5% → 2.34% (↑ +0.8%)
-- 🇨🇭 **Switzerland**: 3.1% → 3.93% (↑ +0.8%)
-- 🇳🇴 **Norway**: 2.1% → 2.8% (↑ +0.7%)
-- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 14.96% (↑ +0.6%)
+- 🇦🇷 **Argentina**: 4.4% → 6.6% (↑ +2.2%)
+- 🇺🇸 **USA**: 1.5% → 2.35% (↑ +0.8%)
+- 🇳🇴 **Norway**: 2.1% → 2.86% (↑ +0.8%)
+- 🇳🇱 **Netherlands**: 1.6% → 2.33% (↑ +0.7%)
+- 🇨🇭 **Switzerland**: 3.1% → 3.72% (↑ +0.6%)
 
 ### 📉 Biggest Fallers
-- 🇵🇹 **Portugal**: 14.9% → 11.96% (↓ -2.9%)
-- 🇩🇪 **Germany**: 10.9% → 8.9% (↓ -2.0%)
-- 🇫🇷 **France**: 11.8% → 10.65% (↓ -1.1%)
-- 🇧🇷 **Brazil**: 5.2% → 4.63% (↓ -0.6%)
-- 🇪🇸 **Spain**: 19.0% → 18.57% (↓ -0.4%)
+- 🇵🇹 **Portugal**: 14.9% → 12.08% (↓ -2.8%)
+- 🇩🇪 **Germany**: 10.9% → 8.84% (↓ -2.1%)
+- 🇪🇸 **Spain**: 19.0% → 18.21% (↓ -0.8%)
+- 🇫🇷 **France**: 11.8% → 11.16% (↓ -0.6%)
+- 🇧🇷 **Brazil**: 5.2% → 4.84% (↓ -0.4%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🇪🇸 **Spain** — 18.57% to win · 45.08% to reach final · 57.74% semifinal
-2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 14.96% to win · 43.18% to reach final · 65.32% semifinal
-3. 🇵🇹 **Portugal** — 11.96% to win · 36.27% to reach final · 55.12% semifinal
-4. 🇫🇷 **France** — 10.65% to win · 30.88% to reach final · 46.47% semifinal
-5. 🇩🇪 **Germany** — 8.9% to win · 27.6% to reach final · 39.94% semifinal
+1. 🇪🇸 **Spain** — 18.21% to win · 43.77% to reach final · 56.79% semifinal
+2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 14.57% to win · 42.2% to reach final · 64.74% semifinal
+3. 🇵🇹 **Portugal** — 12.08% to win · 38.05% to reach final · 56.46% semifinal
+4. 🇫🇷 **France** — 11.16% to win · 30.62% to reach final · 45.75% semifinal
+5. 🇩🇪 **Germany** — 8.84% to win · 27.39% to reach final · 39.91% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
@@ -35,11 +35,11 @@
 - **Upsets called wrong:** 13
 
 ### 😱 Biggest Upsets (model got wrong)
-- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.0% chance
+- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.1% chance
 - 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.8% chance
-- 🇮🇷 Iran 2–2 New Zealand 🇳🇿 · Model only gave this outcome 18.9% chance
+- 🇮🇷 Iran 2–2 New Zealand 🇳🇿 · Model only gave this outcome 18.8% chance
 - 🇧🇪 Belgium 0–0 Iran 🇮🇷 · Model only gave this outcome 20.0% chance
-- 🇧🇪 Belgium 1–1 Egypt 🇪🇬 · Model only gave this outcome 22.6% chance
+- 🇺🇾 Uruguay 2–2 Cape Verde 🇨🇻 · Model only gave this outcome 22.9% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
 *form_nudge = score adjustment based on actual vs predicted goals*
@@ -61,9 +61,9 @@
 ## ⚽ Golden Boot Race
 
 1. 🇦🇷 **L. Messi** — 6 goals, 0 assists
-2. 🇩🇪 **D. Undav** — 3 goals, 2 assists
-3. 🇨🇦 **J. David** — 3 goals, 0 assists
-4. 🇳🇴 **E. Haaland** — 3 goals, 0 assists
+2. 🇳🇴 **E. Haaland** — 4 goals, 0 assists
+3. 🇩🇪 **D. Undav** — 3 goals, 2 assists
+4. 🇨🇦 **J. David** — 3 goals, 0 assists
 5. 🇫🇷 **Kylian Mbappé** — 3 goals, 0 assists
 6. 🇧🇷 **Vinícius Júnior** — 2 goals, 1 assist
 7. 🇳🇱 **C. Summerville** — 2 goals, 1 assist
@@ -154,7 +154,7 @@
 🇦🇷 Argentina are the biggest movers in our World Cup model.
 
 Pre-tournament win probability: 4.4%
-After 42 matches: 6.56%
+After 42 matches: 6.6%
 
 That's a +2.2% swing based on real match data.
 
@@ -170,7 +170,7 @@ Our model updates after every game using Poisson simulation
 Our model predicted the correct outcome in 17/30 (56.7%).
 
 Biggest miss: 🇪🇸 Spain 0–0 Cape Verde 🇨🇻
-We only gave that result a 2.0% chance.
+We only gave that result a 2.1% chance.
 
 That's football. The model learns and adapts after every game.
 
@@ -182,9 +182,9 @@ That's football. The model learns and adapts after every game.
 ⚽ Golden Boot race at WC2026 — matchday 42 update
 
 1. 🇦🇷 L. Messi — 6G 0A
-2. 🇩🇪 D. Undav — 3G 2A
-3. 🇨🇦 J. David — 3G 0A
-4. 🇳🇴 E. Haaland — 3G 0A
+2. 🇳🇴 E. Haaland — 4G 0A
+3. 🇩🇪 D. Undav — 3G 2A
+4. 🇨🇦 J. David — 3G 0A
 5. 🇫🇷 Kylian Mbappé — 3G 0A
 
 #WC2026 #WorldCup2026 #GoldenBoot #Football #ProjectOlympus
