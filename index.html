@@ -1214,11 +1214,15 @@ function renderDailyReport(){
       var aname=D.teams[r.away]?D.teams[r.away].name:r.away;
       var correct='',outcomeLabel='';
       if(r.prediction){
-        var hw=r.prediction.home_win,dr=r.prediction.draw,aw=r.prediction.away_win;
-var predWinner=dr>=hw&&dr>=aw?'draw':hw>=aw?'home':'away';
+        var p=r.prediction;
+        var hw=p.home_win,dr=p.draw,aw=p.away_win;
+        var predWinner=dr>=hw&&dr>=aw?'draw':hw>=aw?'home':'away';
         var actualWinner=r.hg>r.ag?'home':r.ag>r.hg?'away':'draw';
-        correct=predWinner===actualWinner?'correct':'wrong';
-        outcomeLabel=predWinner===actualWinner?'\u2705 Correct':'\u274C Wrong';
+        var predH=Math.round(p.exp_home),predA=Math.round(p.exp_away);
+        var scoreMatch=(predH===r.hg&&predA===r.ag);
+        var outcomeMatch=(predWinner===actualWinner);
+        correct=(outcomeMatch||scoreMatch)?'correct':'wrong';
+        outcomeLabel=(outcomeMatch||scoreMatch)?'\u2705 Correct':'\u274C Wrong';
       }
       html+='<div class="mr-card">';
       html+='<div class="mr-result">';
@@ -1240,13 +1244,10 @@ var predWinner=dr>=hw&&dr>=aw?'draw':hw>=aw?'home':'away';
       html+='</div>';
     });
     html+='</div>';
-
     html+='</div></div>';
   });
-
   content.innerHTML=html;
 }
-
 function toggleDay(header){
   var body=header.nextElementSibling;
   var isOpen=body.classList.contains('open');
