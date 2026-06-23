@@ -1214,7 +1214,8 @@ function renderDailyReport(){
       var aname=D.teams[r.away]?D.teams[r.away].name:r.away;
       var correct='',outcomeLabel='';
       if(r.prediction){
-        var predWinner=r.prediction.home_win>r.prediction.away_win?(r.prediction.home_win>r.prediction.draw?'home':'draw'):(r.prediction.away_win>r.prediction.draw?'away':'draw');
+        var hw=r.prediction.home_win,dr=r.prediction.draw,aw=r.prediction.away_win;
+var predWinner=dr>=hw&&dr>=aw?'draw':hw>=aw?'home':'away';
         var actualWinner=r.hg>r.ag?'home':r.ag>r.hg?'away':'draw';
         correct=predWinner===actualWinner?'correct':'wrong';
         outcomeLabel=predWinner===actualWinner?'\u2705 Correct':'\u274C Wrong';
