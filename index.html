@@ -1234,7 +1234,12 @@ function renderDailyReport(){
         html+='</div>';
         html+='<div style="text-align:center;padding:.25rem;background:var(--bg);font-family:Arial,sans-serif;font-size:.65rem;color:var(--muted);border-top:1px solid var(--border)">';
         html+='Predicted: '+Math.round(p.exp_home)+' \u2013 '+Math.round(p.exp_away)+'</div>';
-        html+='<div class="mr-outcome '+correct+'">'+outcomeLabel+'</div>';
+        var predH=Math.round(p.exp_home), predA=Math.round(p.exp_away);
+        var scoreMatch=(predH===r.hg&&predA===r.ag);
+        html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border)">';
+        html+='<div class="mr-outcome '+correct+'" style="border-right:1px solid var(--border)">'+outcomeLabel+'</div>';
+        html+='<div class="mr-outcome '+(scoreMatch?'correct':'wrong')+'">'+(scoreMatch?'\u2705 Score':'\u274C Score')+'</div>';
+        html+='</div>';
       }
       html+='</div>';
     });
