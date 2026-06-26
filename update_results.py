@@ -47,10 +47,6 @@ R32_PAIRS = [
 ]
 
 def assign_annex_c(b8_teams):
-    """
-    Assign 8 best-third teams to B1-B8 slots per FIFA Annex C.
-    Each team appears in exactly ONE slot.
-    """
     assigned = {}
     used_codes = set()
     for i, slot_groups_str in enumerate(ANNEX_C_SLOTS):
@@ -114,9 +110,9 @@ NAME_MAP = {
     'Saudi Arabia':'KSA','Cape Verde':'CPV','Tunisia':'TUN',
     'New Zealand':'NZL','Curacao':'CUW','Curaçao':'CUW','Haiti':'HAI',
     'Cape Verde Islands':'CPV','Türkiye':'TUR',
-    'United States':'USA','USA':'USA','Paraguay':'PAR','Australia':'AUS',
-    'Korea Republic':'KOR','South Korea':'KOR','IR Iran':'IRN','Iran':'IRN',
-    'Ivory Coast':'CIV',"Cote d'Ivoire":'CIV',"Côte d'Ivoire":'CIV',
+    'USA':'USA','Paraguay':'PAR','Australia':'AUS',
+    'Korea Republic':'KOR','IR Iran':'IRN',
+    "Côte d'Ivoire":'CIV',
 }
 def name_to_code(name):
     if not name: return None
@@ -434,21 +430,20 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
     sfs  = defaultdict(int); qfs    = defaultdict(int)
     r16s = defaultdict(int); advs   = defaultdict(int)
 
-    # Appearance tracking per slot (for R32 non-B slots)
-    r32_slot_appearances = defaultdict(lambda: defaultdict(int))
-    # Winner tracking per slot (for deterministic chain)
-    r32_winner_counts = defaultdict(lambda: defaultdict(int))
-    r16_winner_counts = defaultdict(lambda: defaultdict(int))
-    qf_winner_counts  = defaultdict(lambda: defaultdict(int))
-    sf_winner_counts  = defaultdict(lambda: defaultdict(int))
+    # ── FIXED: Split home/away appearance tracking per R32 slot ─────
+    # Old code used a single dict for both home and away causing
+    # wrong team resolution when home/away slots have different teams.
+    r32_home_appearances = defaultdict(lambda: defaultdict(int))
+    r32_away_appearances = defaultdict(lambda: defaultdict(int))
+
+    r32_winner_counts   = defaultdict(lambda: defaultdict(int))
+    r16_winner_counts   = defaultdict(lambda: defaultdict(int))
+    qf_winner_counts    = defaultdict(lambda: defaultdict(int))
+    sf_winner_counts    = defaultdict(lambda: defaultdict(int))
     final_winner_counts = defaultdict(int)
 
-    # ── Track actual B-slot assignments per sim for display ─────────
-    # Uses real FIFA tiebreakers: pts → gd → gf → model score
-    # Only teams that genuinely qualified as top-8 thirds appear.
-    b_slot_counts = defaultdict(lambda: defaultdict(int))
-    # Also track which group each team came from when occupying a B-slot
-    b_slot_team_group = {}  # (slot, code) -> grp
+    b_slot_counts     = defaultdict(lambda: defaultdict(int))
+    b_slot_team_group = {}
 
     for _ in range(N):
         # ── Group stage ────────────────────────────────────────────
@@ -465,7 +460,6 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
                 'score': updated_teams.get(third_code, {}).get('score', 0),
             })
 
-        # FIFA tiebreaker order: pts → gd → gf → model score
         b8 = sorted(all_thirds, key=lambda t: (
             -t['pts'], -t['gd'], -t['gf'], -t['score']
         ))[:8]
@@ -483,8 +477,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         for slot, code in b_assigned.items():
             if code:
                 slot_map[slot] = code
-                b_slot_counts[slot][code] += 1  # track actual B-slot occupancy
-                # Record which group this team came from
+                b_slot_counts[slot][code] += 1
                 b_slot_team_group[(slot, code)] = next(
                     (t['grp'] for t in b8 if t['code'] == code), None
                 )
@@ -496,10 +489,12 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             a = slot_map.get(slot['away_slot'])
             if not h or not a or h not in updated_teams or a not in updated_teams:
                 w = h or a; r32_winners.append(w)
-                if w: r32_slot_appearances[si][w] += 1; r32_winner_counts[si][w] += 1
+                if w: r32_winner_counts[si][w] += 1
                 continue
             r16s[h] += 1; r16s[a] += 1
-            r32_slot_appearances[si][h] += 1; r32_slot_appearances[si][a] += 1
+            # Track home and away in separate dicts
+            r32_home_appearances[si][h] += 1
+            r32_away_appearances[si][a] += 1
             winner = sim_match(h, a, updated_teams)
             r32_winners.append(winner)
             r32_winner_counts[si][winner] += 1
@@ -562,23 +557,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             'adv':   round(advs[code]   / N * 100, 2),
         }
 
-    def top_winner(d):
-        """Most frequent winner in a slot dict."""
-        if not d: return None
-        w = max(d, key=d.get)
-        return {'code': w, 'pct': round(d[w] / N * 100, 1)}
-
-    def top2_appearances(slot_dict, slot_idx):
-        """Top 2 teams that appeared in a slot (for R32 non-B cards)."""
-        d = slot_dict[slot_idx]
-        if not d: return None, None
-        sorted_teams = sorted(d.items(), key=lambda x: -x[1])
-        t1 = {'code': sorted_teams[0][0], 'pct': round(sorted_teams[0][1]/N*100,1)}
-        t2 = {'code': sorted_teams[1][0], 'pct': round(sorted_teams[1][1]/N*100,1)} if len(sorted_teams) > 1 else None
-        return t1, t2
-
     def h2h_pct(code_a, code_b, teams_dict):
-        """Compute head-to-head win% for code_a vs code_b using the model."""
         if not code_a or not code_b: return 50.0
         if code_a not in teams_dict or code_b not in teams_dict: return 50.0
         lh, la = get_lambdas(code_a, code_b, teams_dict)
@@ -596,7 +575,6 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         return round(hw / tot * 100, 1) if tot > 0 else 50.0
 
     def make_card(slot_name, h_code, a_code, teams_dict):
-        """Build a bracket card with H2H win% and determine winner."""
         if not h_code and not a_code:
             return {'slot': slot_name, 'home': None, 'away': None, 'winner': None}
         if not h_code:
@@ -618,70 +596,38 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             'winner': {'code': winner_code, 'pct': round(winner_pct, 1)},
         }
 
-    # ── Resolve most likely team per slot for R32 display ────────────
-    #
-    # ── B-slot display from actual sim occupancy (FIFA tiebreakers applied) ─
-    # b_slot_counts[slot][code] = sims where code actually occupied that B-slot.
-    # Deduplication: once a team is assigned to a slot, it can't appear in another.
-    def resolve_b_slot_display(b_slot_counts, b_slot_team_group, N):
-        result = {}
-        used_codes = set()
-        used_groups = set()
-        for slot in [f"B{i+1}" for i in range(8)]:
-            counts = b_slot_counts.get(slot, {})
-            # Filter out already-used teams AND teams from already-used groups
-            filtered = {
-                code: cnt for code, cnt in counts.items()
-                if code not in used_codes
-                and b_slot_team_group.get((slot, code)) not in used_groups
-            }
-            if filtered:
-                best = max(filtered, key=filtered.get)
-                best_grp = b_slot_team_group.get((slot, best))
-                result[slot] = {'code': best, 'pct': round(counts[best] / N * 100, 1)}
-                used_codes.add(best)
-                if best_grp: used_groups.add(best_grp)
-            else:
-                result[slot] = None
-        return result
-
-    b_slot_display = resolve_b_slot_display(b_slot_counts, b_slot_team_group, N)
-
-    # ── Build R32 cards ───────────────────────────────────────────────
-    # For non-B slots (1X, 2X): use top2_appearances exactly as original —
-    #   home = most frequent team, away = second most frequent team.
-    # For B slots: use b_slot_display (modal 3rd-place per group via Annex C).
-
     # ── Two-pass R32 display resolution ─────────────────────────────
-    # Pass 1: resolve all non-B slots to find which teams are used
-    # Pass 2: resolve B slots excluding teams already used in non-B slots
-    # This prevents e.g. SEN appearing as both 1G (non-B) and B3 (B-slot)
+    # Pass 1: resolve all non-B slots using split home/away dicts
+    non_b_codes  = set()
+    non_b_resolved = {}
+    temp_used    = set()
 
-    # Pass 1: collect non-B slot assignments
-    non_b_codes = set()
-    non_b_resolved = {}  # slot_idx -> (h_code, h_pct, a_code, a_pct)
-    temp_used = set()
     for i, slot in enumerate(r32_slots):
         h_str = slot['home_slot']; a_str = slot['away_slot']
         h_code, h_pct, a_code, a_pct = None, 0.0, None, 0.0
+
         if not h_str.startswith('B'):
-            d = r32_slot_appearances[i]
+            # Use home-specific dict — only teams that actually played home in this slot
+            d = r32_home_appearances[i]
             for code, cnt in sorted(d.items(), key=lambda x: -x[1]):
                 if code not in temp_used:
-                    h_code = code; h_pct = round(cnt/N*100,1); break
+                    h_code = code; h_pct = round(cnt/N*100, 1); break
             if h_code: temp_used.add(h_code); non_b_codes.add(h_code)
+
         if not a_str.startswith('B'):
-            d = r32_slot_appearances[i]
+            # Use away-specific dict — only teams that actually played away in this slot
+            d = r32_away_appearances[i]
             for code, cnt in sorted(d.items(), key=lambda x: -x[1]):
                 if code not in temp_used:
-                    a_code = code; a_pct = round(cnt/N*100,1); break
+                    a_code = code; a_pct = round(cnt/N*100, 1); break
             if a_code: temp_used.add(a_code); non_b_codes.add(a_code)
+
         non_b_resolved[i] = (h_code, h_pct, a_code, a_pct)
 
     # Pass 2: resolve B-slot display excluding non-B codes
     def resolve_b_slot_display_v2(b_slot_counts, b_slot_team_group, N, exclude_codes):
         result = {}
-        used_codes = set(exclude_codes)  # start with non-B codes already used
+        used_codes  = set(exclude_codes)
         used_groups = set()
         for slot in [f"B{i+1}" for i in range(8)]:
             counts = b_slot_counts.get(slot, {})
@@ -691,7 +637,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
                 and b_slot_team_group.get((slot, code)) not in used_groups
             }
             if filtered:
-                best = max(filtered, key=filtered.get)
+                best     = max(filtered, key=filtered.get)
                 best_grp = b_slot_team_group.get((slot, best))
                 result[slot] = {'code': best, 'pct': round(counts[best] / N * 100, 1)}
                 used_codes.add(best)
@@ -700,24 +646,25 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
                 result[slot] = None
         return result
 
-    b_slot_display = resolve_b_slot_display_v2(b_slot_counts, b_slot_team_group, N, non_b_codes)
+    b_slot_display = resolve_b_slot_display_v2(
+        b_slot_counts, b_slot_team_group, N, non_b_codes
+    )
 
     # Pass 3: build R32 cards combining non-B and B resolutions
     r32_cards = []
-    used_r32_codes = set(non_b_codes)
     for i, slot in enumerate(r32_slots):
         h_str = slot['home_slot']; a_str = slot['away_slot']
         nb_h, nb_h_pct, nb_a, nb_a_pct = non_b_resolved[i]
 
         if h_str.startswith('B'):
-            entry = b_slot_display.get(h_str)
+            entry  = b_slot_display.get(h_str)
             h_code = entry['code'] if entry else None
             h_pct  = entry['pct']  if entry else 0.0
         else:
             h_code, h_pct = nb_h, nb_h_pct
 
         if a_str.startswith('B'):
-            entry = b_slot_display.get(a_str)
+            entry  = b_slot_display.get(a_str)
             a_code = entry['code'] if entry else None
             a_pct  = entry['pct']  if entry else 0.0
         else:
@@ -728,28 +675,28 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         if card.get('away'): card['away']['pct'] = a_pct
         r32_cards.append(card)
 
-    # R16: winner of R32[2i] vs winner of R32[2i+1] — deterministic chain
+    # R16
     r16_cards = []
     for i in range(8):
         h_code = r32_cards[i*2]['winner']['code']   if r32_cards[i*2].get('winner')   else None
         a_code = r32_cards[i*2+1]['winner']['code'] if r32_cards[i*2+1].get('winner') else None
         r16_cards.append(make_card(f'R16_{i+1}', h_code, a_code, updated_teams))
 
-    # QF: winner of R16[2i] vs winner of R16[2i+1]
+    # QF
     qf_cards = []
     for i in range(4):
         h_code = r16_cards[i*2]['winner']['code']   if r16_cards[i*2].get('winner')   else None
         a_code = r16_cards[i*2+1]['winner']['code'] if r16_cards[i*2+1].get('winner') else None
         qf_cards.append(make_card(f'QF_{i+1}', h_code, a_code, updated_teams))
 
-    # SF: winner of QF[2i] vs winner of QF[2i+1]
+    # SF
     sf_cards = []
     for i in range(2):
         h_code = qf_cards[i*2]['winner']['code']   if qf_cards[i*2].get('winner')   else None
         a_code = qf_cards[i*2+1]['winner']['code'] if qf_cards[i*2+1].get('winner') else None
         sf_cards.append(make_card(f'SF_{i+1}', h_code, a_code, updated_teams))
 
-    # Final: winner of SF[0] vs winner of SF[1]
+    # Final
     final_h = sf_cards[0]['winner']['code'] if sf_cards[0].get('winner') else None
     final_a = sf_cards[1]['winner']['code'] if sf_cards[1].get('winner') else None
     final_card = make_card('Final', final_h, final_a, updated_teams)
