@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: June 26, 2026 02:04 UTC · Phase: Group Stage · 58 matches played*
+*Auto-generated: June 26, 2026 02:06 UTC · Phase: Group Stage · 58 matches played*
 
 ---
 
@@ -7,27 +7,27 @@
 *Compare live model vs pre-tournament prediction*
 
 ### 🚀 Biggest Risers
-- 🇳🇱 **Netherlands**: 1.6% → 3.33% (↑ +1.7%)
-- 🇦🇷 **Argentina**: 4.4% → 6.0% (↑ +1.6%)
-- 🇺🇸 **USA**: 1.5% → 2.85% (↑ +1.4%)
-- 🇧🇪 **Belgium**: 1.4% → 2.25% (↑ +0.8%)
-- 🇨🇭 **Switzerland**: 3.1% → 3.92% (↑ +0.8%)
+- 🇳🇱 **Netherlands**: 1.6% → 3.52% (↑ +1.9%)
+- 🇦🇷 **Argentina**: 4.4% → 6.07% (↑ +1.7%)
+- 🇺🇸 **USA**: 1.5% → 2.74% (↑ +1.2%)
+- 🇲🇦 **Morocco**: 0.5% → 1.31% (↑ +0.8%)
+- 🇧🇪 **Belgium**: 1.4% → 1.99% (↑ +0.6%)
 
 ### 📉 Biggest Fallers
-- 🇵🇹 **Portugal**: 14.9% → 11.65% (↓ -3.2%)
-- 🇩🇪 **Germany**: 10.9% → 9.09% (↓ -1.8%)
-- 🇧🇷 **Brazil**: 5.2% → 4.37% (↓ -0.8%)
-- 🏴󠁧󠁢󠁳󠁣󠁴󠁿 **Scotland**: 0.8% → 0.11% (↓ -0.7%)
-- 🇪🇸 **Spain**: 19.0% → 18.51% (↓ -0.5%)
+- 🇵🇹 **Portugal**: 14.9% → 11.54% (↓ -3.4%)
+- 🇩🇪 **Germany**: 10.9% → 9.05% (↓ -1.9%)
+- 🏴󠁧󠁢󠁳󠁣󠁴󠁿 **Scotland**: 0.8% → 0.14% (↓ -0.7%)
+- 🇪🇸 **Spain**: 19.0% → 18.58% (↓ -0.4%)
+- 🇦🇹 **Austria**: 1.3% → 1.04% (↓ -0.3%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🇪🇸 **Spain** — 18.51% to win · 44.74% to reach final · 57.11% semifinal
-2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 14.72% to win · 42.56% to reach final · 67.44% semifinal
-3. 🇵🇹 **Portugal** — 11.65% to win · 36.69% to reach final · 54.22% semifinal
-4. 🇫🇷 **France** — 11.49% to win · 34.38% to reach final · 48.9% semifinal
-5. 🇩🇪 **Germany** — 9.09% to win · 28.55% to reach final · 40.05% semifinal
+1. 🇪🇸 **Spain** — 18.58% to win · 45.03% to reach final · 57.3% semifinal
+2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 14.34% to win · 42.04% to reach final · 66.83% semifinal
+3. 🇫🇷 **France** — 11.57% to win · 33.17% to reach final · 47.79% semifinal
+4. 🇵🇹 **Portugal** — 11.54% to win · 37.08% to reach final · 55.1% semifinal
+5. 🇩🇪 **Germany** — 9.05% to win · 28.98% to reach final · 40.32% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
@@ -36,10 +36,10 @@
 
 ### 😱 Biggest Upsets (model got wrong)
 - 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.8% chance
-- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.1% chance
-- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–0 Ghana 🇬🇭 · Model only gave this outcome 3.8% chance
+- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.0% chance
+- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–0 Ghana 🇬🇭 · Model only gave this outcome 3.7% chance
 - 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.4% chance
-- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.8% chance
+- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.6% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
 *form_nudge = score adjustment based on actual vs predicted goals*
@@ -154,9 +154,9 @@
 🇳🇱 Netherlands are the biggest movers in our World Cup model.
 
 Pre-tournament win probability: 1.6%
-After 58 matches: 3.33%
+After 58 matches: 3.52%
 
-That's a +1.7% swing based on real match data.
+That's a +1.9% swing based on real match data.
 
 Our model updates after every game using Poisson simulation
 & Bayesian score adjustment. 10,000 simulations per update.
