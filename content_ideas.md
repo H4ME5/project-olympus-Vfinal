@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: June 28, 2026 23:44 UTC · Phase: Round Of 32 · 73 matches played*
+*Auto-generated: June 28, 2026 23:46 UTC · Phase: Round Of 32 · 73 matches played*
 
 ---
 
@@ -8,26 +8,26 @@
 
 ### 🚀 Biggest Risers
 - 🇦🇷 **Argentina**: 4.4% → 9.38% (↑ +5.0%)
-- 🇨🇭 **Switzerland**: 3.1% → 5.29% (↑ +2.2%)
-- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 16.44% (↑ +2.0%)
-- 🇳🇱 **Netherlands**: 1.6% → 3.55% (↑ +1.9%)
-- 🇧🇪 **Belgium**: 1.4% → 2.63% (↑ +1.2%)
+- 🇨🇭 **Switzerland**: 3.1% → 5.14% (↑ +2.0%)
+- 🇳🇱 **Netherlands**: 1.6% → 3.39% (↑ +1.8%)
+- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 15.8% (↑ +1.4%)
+- 🇫🇷 **France**: 11.8% → 13.0% (↑ +1.2%)
 
 ### 📉 Biggest Fallers
-- 🇵🇹 **Portugal**: 14.9% → 7.55% (↓ -7.3%)
-- 🇪🇸 **Spain**: 19.0% → 14.32% (↓ -4.7%)
-- 🇩🇪 **Germany**: 10.9% → 8.46% (↓ -2.4%)
-- 🇭🇷 **Croatia**: 3.0% → 1.48% (↓ -1.5%)
+- 🇵🇹 **Portugal**: 14.9% → 7.81% (↓ -7.1%)
+- 🇪🇸 **Spain**: 19.0% → 14.62% (↓ -4.4%)
+- 🇩🇪 **Germany**: 10.9% → 8.53% (↓ -2.4%)
+- 🇭🇷 **Croatia**: 3.0% → 1.27% (↓ -1.7%)
 - 🏴󠁧󠁢󠁳󠁣󠁴󠁿 **Scotland**: 0.8% → 0.0% (↓ -0.8%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 16.44% to win · 44.26% to reach final · 68.15% semifinal
-2. 🇪🇸 **Spain** — 14.32% to win · 35.31% to reach final · 46.22% semifinal
-3. 🇫🇷 **France** — 12.58% to win · 36.94% to reach final · 49.92% semifinal
-4. 🇦🇷 **Argentina** — 9.38% to win · 44.09% to reach final · 69.72% semifinal
-5. 🇩🇪 **Germany** — 8.46% to win · 27.16% to reach final · 37.53% semifinal
+1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 15.8% to win · 42.97% to reach final · 66.93% semifinal
+2. 🇪🇸 **Spain** — 14.62% to win · 34.93% to reach final · 46.1% semifinal
+3. 🇫🇷 **France** — 13.0% to win · 36.76% to reach final · 49.86% semifinal
+4. 🇦🇷 **Argentina** — 9.38% to win · 44.47% to reach final · 70.02% semifinal
+5. 🇩🇪 **Germany** — 8.53% to win · 27.02% to reach final · 37.24% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
@@ -35,11 +35,11 @@
 - **Upsets called wrong:** 29
 
 ### 😱 Biggest Upsets (model got wrong)
-- 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.7% chance
-- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 1.9% chance
+- 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.8% chance
+- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.0% chance
 - 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–0 Ghana 🇬🇭 · Model only gave this outcome 3.8% chance
-- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.4% chance
-- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.9% chance
+- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.7% chance
+- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.6% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
 *form_nudge = score adjustment based on actual vs predicted goals*
@@ -170,7 +170,7 @@ Our model updates after every game using Poisson simulation
 Our model predicted the correct outcome in 44/73 (60.3%).
 
 Biggest miss: 🇪🇨 Ecuador 2–1 Germany 🇩🇪
-We only gave that result a 1.7% chance.
+We only gave that result a 1.8% chance.
 
 That's football. The model learns and adapts after every game.
 
