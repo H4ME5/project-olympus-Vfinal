@@ -38,7 +38,7 @@ ANNEX_C_SLOTS = [
     "3DEIJL",  # B8 — faces 1K
 ]
 
-# Official FIFA R32 pairings
+# Official FIFA R32 pairings (pre-tournament slot definitions)
 R32_PAIRS = [
     ("1E","B1"), ("1I","B2"), ("2A","2B"), ("1F","2C"),
     ("2K","2L"), ("1H","2J"), ("1D","B4"), ("1G","B3"),
@@ -46,7 +46,43 @@ R32_PAIRS = [
     ("1J","2H"), ("2D","2G"), ("1B","B7"), ("1K","B8"),
 ]
 
+# ── CONFIRMED R32 MATCHUPS ────────────────────────────────────────────
+# Hardcoded after group stage completion based on official FIFA draw.
+# Order matches R32_1 through R32_16 for bracket display consistency.
+# home/away order follows FIFA bracket (home = higher-seeded slot side).
+CONFIRMED_R32_TEAMS = [
+    ('GER', 'PAR'),  # R32_1  — 1E vs 2D
+    ('FRA', 'SWE'),  # R32_2  — 1I vs 3F
+    ('ZAF', 'CAN'),  # R32_3  — 2A vs 2B  (already played)
+    ('NED', 'MAR'),  # R32_4  — 1F vs 2C
+    ('POR', 'CRO'),  # R32_5  — 2K vs 2L
+    ('ESP', 'AUT'),  # R32_6  — 1H vs 2J
+    ('USA', 'BIH'),  # R32_7  — 1D vs 2B
+    ('BEL', 'SEN'),  # R32_8  — 1G vs 3I
+    ('BRA', 'JPN'),  # R32_9  — 1C vs 2F
+    ('CIV', 'NOR'),  # R32_10 — 2E vs 2I
+    ('MEX', 'ECU'),  # R32_11 — 1A vs 3E
+    ('ENG', 'COD'),  # R32_12 — 1L vs 3K
+    ('ARG', 'CPV'),  # R32_13 — 1J vs 2H
+    ('AUS', 'EGY'),  # R32_14 — 2D vs 2G
+    ('SUI', 'ALG'),  # R32_15 — 1B vs 3J
+    ('COL', 'GHA'),  # R32_16 — 1K vs 3L
+]
+
+# ── CONFIRMED R32 RESULTS (fill in as matches are played) ─────────────
+# Format: (home_code, away_code, hg, ag) or None if not yet played.
+# ZAF vs CAN already played: 0-1
+CONFIRMED_R32_RESULTS = {
+    ('ZAF', 'CAN'): (0, 1),   # Canada won
+    # Add results here as matches finish, e.g.:
+    # ('BRA', 'JPN'): (2, 1),
+}
+
 def assign_annex_c(b8_teams):
+    """
+    Assign 8 best-third teams to B1-B8 slots per FIFA Annex C.
+    Each team appears in exactly ONE slot.
+    """
     assigned = {}
     used_codes = set()
     for i, slot_groups_str in enumerate(ANNEX_C_SLOTS):
@@ -415,6 +451,11 @@ def simulate_group(codes, teams, known_results):
     stats = {c: {'pts': pts[c], 'gd': gd[c], 'gf': gf_[c]} for c in codes}
     return standing, stats
 
+def is_group_stage_complete(finished_fixtures):
+    """Returns True when all 48 group stage matches have been played."""
+    group_matches = [fx for fx in finished_fixtures if 'Group' in fx.get('stage', '')]
+    return len(group_matches) >= 48
+
 def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r32_slots):
     group_results = defaultdict(list)
     for fx in finished_fixtures:
@@ -426,21 +467,26 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             if h in codes and a in codes:
                 group_results[grp].append((h, a, fx['hg'], fx['ag'])); break
 
+    # Detect if group stage is complete — enables confirmed R32 override
+    group_stage_done = is_group_stage_complete(finished_fixtures)
+    if group_stage_done:
+        print('  Group stage complete — using confirmed R32 matchups for bracket display')
+
     wins = defaultdict(int); finals = defaultdict(int)
     sfs  = defaultdict(int); qfs    = defaultdict(int)
     r16s = defaultdict(int); advs   = defaultdict(int)
 
-    # ── FIXED: Split home/away appearance tracking per R32 slot ─────
-    # Old code used a single dict for both home and away causing
-    # wrong team resolution when home/away slots have different teams.
+    # Win tracking per confirmed R32 slot (used post-group stage)
+    confirmed_r32_winner_counts = defaultdict(lambda: defaultdict(int))
+
+    # Pre-group-stage tracking (kept for backward compatibility)
     r32_home_appearances = defaultdict(lambda: defaultdict(int))
     r32_away_appearances = defaultdict(lambda: defaultdict(int))
-
-    r32_winner_counts   = defaultdict(lambda: defaultdict(int))
-    r16_winner_counts   = defaultdict(lambda: defaultdict(int))
-    qf_winner_counts    = defaultdict(lambda: defaultdict(int))
-    sf_winner_counts    = defaultdict(lambda: defaultdict(int))
-    final_winner_counts = defaultdict(int)
+    r32_winner_counts    = defaultdict(lambda: defaultdict(int))
+    r16_winner_counts    = defaultdict(lambda: defaultdict(int))
+    qf_winner_counts     = defaultdict(lambda: defaultdict(int))
+    sf_winner_counts     = defaultdict(lambda: defaultdict(int))
+    final_winner_counts  = defaultdict(int)
 
     b_slot_counts     = defaultdict(lambda: defaultdict(int))
     b_slot_team_group = {}
@@ -483,21 +529,47 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
                 )
 
         # ── R32 ────────────────────────────────────────────────────
+        # When group stage is done, use confirmed teams for simulation.
+        # When still in group stage, use slot_map as before.
         r32_winners = []
-        for si, slot in enumerate(r32_slots):
-            h = slot_map.get(slot['home_slot'])
-            a = slot_map.get(slot['away_slot'])
-            if not h or not a or h not in updated_teams or a not in updated_teams:
-                w = h or a; r32_winners.append(w)
-                if w: r32_winner_counts[si][w] += 1
-                continue
-            r16s[h] += 1; r16s[a] += 1
-            # Track home and away in separate dicts
-            r32_home_appearances[si][h] += 1
-            r32_away_appearances[si][a] += 1
-            winner = sim_match(h, a, updated_teams)
-            r32_winners.append(winner)
-            r32_winner_counts[si][winner] += 1
+        if group_stage_done:
+            # Simulate using confirmed matchups
+            # Account for already-played R32 matches using CONFIRMED_R32_RESULTS
+            for si, (h, a) in enumerate(CONFIRMED_R32_TEAMS):
+                if not h or not a or h not in updated_teams or a not in updated_teams:
+                    r32_winners.append(h or a); continue
+                r16s[h] += 1; r16s[a] += 1
+                # Check if this match already has a confirmed result
+                result = CONFIRMED_R32_RESULTS.get((h, a)) or CONFIRMED_R32_RESULTS.get((a, h))
+                if result:
+                    hg, ag = result
+                    # Determine winner from actual result
+                    if hg > ag:
+                        winner = h
+                    elif ag > hg:
+                        winner = a
+                    else:
+                        # Extra time — use model to determine ET winner
+                        winner = sim_match(h, a, updated_teams)
+                else:
+                    winner = sim_match(h, a, updated_teams)
+                r32_winners.append(winner)
+                confirmed_r32_winner_counts[si][winner] += 1
+        else:
+            # Pre-group-stage: original slot-map based simulation
+            for si, slot in enumerate(r32_slots):
+                h = slot_map.get(slot['home_slot'])
+                a = slot_map.get(slot['away_slot'])
+                if not h or not a or h not in updated_teams or a not in updated_teams:
+                    w = h or a; r32_winners.append(w)
+                    if w: r32_winner_counts[si][w] += 1
+                    continue
+                r16s[h] += 1; r16s[a] += 1
+                r32_home_appearances[si][h] += 1
+                r32_away_appearances[si][a] += 1
+                winner = sim_match(h, a, updated_teams)
+                r32_winners.append(winner)
+                r32_winner_counts[si][winner] += 1
 
         # ── R16 ────────────────────────────────────────────────────
         r16_winners = []
@@ -545,7 +617,7 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
             wins[champion] += 1
             final_winner_counts[champion] += 1
 
-    # Convert to percentages
+    # ── Convert to percentages ────────────────────────────────────
     results = {}
     for code in updated_teams:
         results[code] = {
@@ -574,7 +646,8 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         tot = hw + dw + aw
         return round(hw / tot * 100, 1) if tot > 0 else 50.0
 
-    def make_card(slot_name, h_code, a_code, teams_dict):
+    def make_card(slot_name, h_code, a_code, teams_dict, h_pct_override=None, a_pct_override=None):
+        """Build a bracket card. pct_override lets us inject simulation-derived %."""
         if not h_code and not a_code:
             return {'slot': slot_name, 'home': None, 'away': None, 'winner': None}
         if not h_code:
@@ -589,114 +662,143 @@ def run_live_tournament_sims(N, updated_teams, base_groups, finished_fixtures, r
         a_pct = round(100.0 - h_pct, 1)
         winner_code = h_code if h_pct >= 50.0 else a_code
         winner_pct  = h_pct if h_pct >= 50.0 else a_pct
-        return {
+        card = {
             'slot': slot_name,
-            'home': {'code': h_code, 'pct': h_pct},
-            'away': {'code': a_code, 'pct': a_pct},
+            'home': {'code': h_code, 'pct': h_pct_override if h_pct_override is not None else 100.0},
+            'away': {'code': a_code, 'pct': a_pct_override if a_pct_override is not None else 100.0},
             'winner': {'code': winner_code, 'pct': round(winner_pct, 1)},
         }
+        return card
 
-    # ── Two-pass R32 display resolution ─────────────────────────────
-    # Pass 1: resolve all non-B slots using split home/away dicts
-    non_b_codes  = set()
-    non_b_resolved = {}
-    temp_used    = set()
-
-    for i, slot in enumerate(r32_slots):
-        h_str = slot['home_slot']; a_str = slot['away_slot']
-        h_code, h_pct, a_code, a_pct = None, 0.0, None, 0.0
-
-        if not h_str.startswith('B'):
-            # Use home-specific dict — only teams that actually played home in this slot
-            d = r32_home_appearances[i]
-            for code, cnt in sorted(d.items(), key=lambda x: -x[1]):
-                if code not in temp_used:
-                    h_code = code; h_pct = round(cnt/N*100, 1); break
-            if h_code: temp_used.add(h_code); non_b_codes.add(h_code)
-
-        if not a_str.startswith('B'):
-            # Use away-specific dict — only teams that actually played away in this slot
-            d = r32_away_appearances[i]
-            for code, cnt in sorted(d.items(), key=lambda x: -x[1]):
-                if code not in temp_used:
-                    a_code = code; a_pct = round(cnt/N*100, 1); break
-            if a_code: temp_used.add(a_code); non_b_codes.add(a_code)
-
-        non_b_resolved[i] = (h_code, h_pct, a_code, a_pct)
-
-    # Pass 2: resolve B-slot display excluding non-B codes
-    def resolve_b_slot_display_v2(b_slot_counts, b_slot_team_group, N, exclude_codes):
-        result = {}
-        used_codes  = set(exclude_codes)
-        used_groups = set()
-        for slot in [f"B{i+1}" for i in range(8)]:
-            counts = b_slot_counts.get(slot, {})
-            filtered = {
-                code: cnt for code, cnt in counts.items()
-                if code not in used_codes
-                and b_slot_team_group.get((slot, code)) not in used_groups
-            }
-            if filtered:
-                best     = max(filtered, key=filtered.get)
-                best_grp = b_slot_team_group.get((slot, best))
-                result[slot] = {'code': best, 'pct': round(counts[best] / N * 100, 1)}
-                used_codes.add(best)
-                if best_grp: used_groups.add(best_grp)
-            else:
-                result[slot] = None
-        return result
-
-    b_slot_display = resolve_b_slot_display_v2(
-        b_slot_counts, b_slot_team_group, N, non_b_codes
-    )
-
-    # Pass 3: build R32 cards combining non-B and B resolutions
+    # ── Build R32 display cards ───────────────────────────────────
     r32_cards = []
-    for i, slot in enumerate(r32_slots):
-        h_str = slot['home_slot']; a_str = slot['away_slot']
-        nb_h, nb_h_pct, nb_a, nb_a_pct = non_b_resolved[i]
 
-        if h_str.startswith('B'):
-            entry  = b_slot_display.get(h_str)
-            h_code = entry['code'] if entry else None
-            h_pct  = entry['pct']  if entry else 0.0
-        else:
-            h_code, h_pct = nb_h, nb_h_pct
+    if group_stage_done:
+        # ── POST GROUP STAGE: use confirmed matchups directly ─────
+        # Each confirmed matchup gets 100% pct (certainty).
+        # For already-played matches, show actual winner.
+        for i, (h, a) in enumerate(CONFIRMED_R32_TEAMS):
+            slot_name = f'R32_{i+1}'
+            result = CONFIRMED_R32_RESULTS.get((h, a)) or CONFIRMED_R32_RESULTS.get((a, h))
+            if result:
+                # Match already played — show actual result winner
+                hg, ag = result
+                if hg > ag:
+                    actual_winner = h; actual_winner_pct = 100.0
+                elif ag > hg:
+                    actual_winner = a; actual_winner_pct = 100.0
+                else:
+                    # Draw — use model to pick ET winner for display
+                    hw = h2h_pct(h, a, updated_teams)
+                    actual_winner = h if hw >= 50 else a
+                    actual_winner_pct = hw if hw >= 50 else round(100-hw, 1)
+                card = {
+                    'slot': slot_name,
+                    'home': {'code': h, 'pct': 100.0},
+                    'away': {'code': a, 'pct': 100.0},
+                    'winner': {'code': actual_winner, 'pct': actual_winner_pct},
+                }
+            else:
+                # Not yet played — use model h2h for winner prediction
+                card = make_card(slot_name, h, a, updated_teams,
+                                 h_pct_override=100.0, a_pct_override=100.0)
+            r32_cards.append(card)
 
-        if a_str.startswith('B'):
-            entry  = b_slot_display.get(a_str)
-            a_code = entry['code'] if entry else None
-            a_pct  = entry['pct']  if entry else 0.0
-        else:
-            a_code, a_pct = nb_a, nb_a_pct
+    else:
+        # ── PRE GROUP STAGE COMPLETE: original slot-based resolution ─
+        non_b_codes   = set()
+        non_b_resolved = {}
+        temp_used     = set()
 
-        card = make_card(f'R32_{i+1}', h_code, a_code, updated_teams)
-        if card.get('home'): card['home']['pct'] = h_pct
-        if card.get('away'): card['away']['pct'] = a_pct
-        r32_cards.append(card)
+        for i, slot in enumerate(r32_slots):
+            h_str = slot['home_slot']; a_str = slot['away_slot']
+            h_code, h_pct, a_code, a_pct = None, 0.0, None, 0.0
 
-    # R16
+            if not h_str.startswith('B'):
+                d = r32_home_appearances[i]
+                for code, cnt in sorted(d.items(), key=lambda x: -x[1]):
+                    if code not in temp_used:
+                        h_code = code; h_pct = round(cnt/N*100, 1); break
+                if h_code: temp_used.add(h_code); non_b_codes.add(h_code)
+
+            if not a_str.startswith('B'):
+                d = r32_away_appearances[i]
+                for code, cnt in sorted(d.items(), key=lambda x: -x[1]):
+                    if code not in temp_used:
+                        a_code = code; a_pct = round(cnt/N*100, 1); break
+                if a_code: temp_used.add(a_code); non_b_codes.add(a_code)
+
+            non_b_resolved[i] = (h_code, h_pct, a_code, a_pct)
+
+        def resolve_b_slot_display_v2(b_slot_counts, b_slot_team_group, N, exclude_codes):
+            result = {}
+            used_codes  = set(exclude_codes)
+            used_groups = set()
+            for slot in [f"B{i+1}" for i in range(8)]:
+                counts = b_slot_counts.get(slot, {})
+                filtered = {
+                    code: cnt for code, cnt in counts.items()
+                    if code not in used_codes
+                    and b_slot_team_group.get((slot, code)) not in used_groups
+                }
+                if filtered:
+                    best     = max(filtered, key=filtered.get)
+                    best_grp = b_slot_team_group.get((slot, best))
+                    result[slot] = {'code': best, 'pct': round(counts[best] / N * 100, 1)}
+                    used_codes.add(best)
+                    if best_grp: used_groups.add(best_grp)
+                else:
+                    result[slot] = None
+            return result
+
+        b_slot_display = resolve_b_slot_display_v2(
+            b_slot_counts, b_slot_team_group, N, non_b_codes
+        )
+
+        for i, slot in enumerate(r32_slots):
+            h_str = slot['home_slot']; a_str = slot['away_slot']
+            nb_h, nb_h_pct, nb_a, nb_a_pct = non_b_resolved[i]
+
+            if h_str.startswith('B'):
+                entry  = b_slot_display.get(h_str)
+                h_code = entry['code'] if entry else None
+                h_pct  = entry['pct']  if entry else 0.0
+            else:
+                h_code, h_pct = nb_h, nb_h_pct
+
+            if a_str.startswith('B'):
+                entry  = b_slot_display.get(a_str)
+                a_code = entry['code'] if entry else None
+                a_pct  = entry['pct']  if entry else 0.0
+            else:
+                a_code, a_pct = nb_a, nb_a_pct
+
+            card = make_card(f'R32_{i+1}', h_code, a_code, updated_teams)
+            if card.get('home'): card['home']['pct'] = h_pct
+            if card.get('away'): card['away']['pct'] = a_pct
+            r32_cards.append(card)
+
+    # ── R16 onwards: chain from r32_cards winners ─────────────────
+    # This is identical regardless of group stage status —
+    # r32_cards always contains correct teams at this point.
     r16_cards = []
     for i in range(8):
         h_code = r32_cards[i*2]['winner']['code']   if r32_cards[i*2].get('winner')   else None
         a_code = r32_cards[i*2+1]['winner']['code'] if r32_cards[i*2+1].get('winner') else None
         r16_cards.append(make_card(f'R16_{i+1}', h_code, a_code, updated_teams))
 
-    # QF
     qf_cards = []
     for i in range(4):
         h_code = r16_cards[i*2]['winner']['code']   if r16_cards[i*2].get('winner')   else None
         a_code = r16_cards[i*2+1]['winner']['code'] if r16_cards[i*2+1].get('winner') else None
         qf_cards.append(make_card(f'QF_{i+1}', h_code, a_code, updated_teams))
 
-    # SF
     sf_cards = []
     for i in range(2):
         h_code = qf_cards[i*2]['winner']['code']   if qf_cards[i*2].get('winner')   else None
         a_code = qf_cards[i*2+1]['winner']['code'] if qf_cards[i*2+1].get('winner') else None
         sf_cards.append(make_card(f'SF_{i+1}', h_code, a_code, updated_teams))
 
-    # Final
     final_h = sf_cards[0]['winner']['code'] if sf_cards[0].get('winner') else None
     final_a = sf_cards[1]['winner']['code'] if sf_cards[1].get('winner') else None
     final_card = make_card('Final', final_h, final_a, updated_teams)
@@ -898,6 +1000,24 @@ def main():
 
     update, reason, next_ko = should_update(fixtures)
     print(f'  Should update: {update} -- {reason}')
+
+    # Auto-populate CONFIRMED_R32_RESULTS from finished R32 fixtures
+    for fx in finished:
+        if 'Round of 32' not in fx.get('stage', ''): continue
+        h, a = fx['home'], fx['away']
+        if not h or not a: continue
+        key = (h, a)
+        rev = (a, h)
+        # Check if this match is in our confirmed list
+        for ch, ca in CONFIRMED_R32_TEAMS:
+            if (ch == h and ca == a) or (ch == a and ca == h):
+                canonical = (ch, ca)
+                hg = fx['hg'] if ch == h else fx['ag']
+                ag = fx['ag'] if ch == h else fx['hg']
+                if canonical not in CONFIRMED_R32_RESULTS:
+                    CONFIRMED_R32_RESULTS[canonical] = (hg, ag)
+                    print(f'  Auto-added R32 result: {ch} {hg}-{ag} {ca}')
+                break
 
     print('Running full update...')
     phase         = get_phase(fixtures)
