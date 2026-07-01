@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: July 01, 2026 10:04 UTC · Phase: Round Of 32 · 79 matches played*
+*Auto-generated: July 01, 2026 10:06 UTC · Phase: Round Of 32 · 79 matches played*
 
 ---
 
@@ -7,27 +7,27 @@
 *Compare live model vs pre-tournament prediction*
 
 ### 🚀 Biggest Risers
-- 🇦🇷 **Argentina**: 4.4% → 8.68% (↑ +4.3%)
-- 🇫🇷 **France**: 11.8% → 14.69% (↑ +2.9%)
-- 🇧🇷 **Brazil**: 5.2% → 7.88% (↑ +2.7%)
-- 🇳🇴 **Norway**: 2.1% → 4.27% (↑ +2.2%)
-- 🇨🇭 **Switzerland**: 3.1% → 5.07% (↑ +2.0%)
+- 🇦🇷 **Argentina**: 4.4% → 8.81% (↑ +4.4%)
+- 🇧🇷 **Brazil**: 5.2% → 8.72% (↑ +3.5%)
+- 🇫🇷 **France**: 11.8% → 14.26% (↑ +2.5%)
+- 🇨🇭 **Switzerland**: 3.1% → 4.99% (↑ +1.9%)
+- 🇳🇴 **Norway**: 2.1% → 3.93% (↑ +1.8%)
 
 ### 📉 Biggest Fallers
-- 🇵🇹 **Portugal**: 14.9% → 7.85% (↓ -7.0%)
-- 🇪🇸 **Spain**: 19.0% → 15.07% (↓ -3.9%)
-- 🇩🇪 **Germany**: 10.9% → 8.92% (↓ -2.0%)
-- 🇭🇷 **Croatia**: 3.0% → 1.18% (↓ -1.8%)
+- 🇵🇹 **Portugal**: 14.9% → 7.35% (↓ -7.5%)
+- 🇪🇸 **Spain**: 19.0% → 15.27% (↓ -3.7%)
 - 🇯🇵 **Japan**: 1.8% → 0.0% (↓ -1.8%)
+- 🇭🇷 **Croatia**: 3.0% → 1.24% (↓ -1.8%)
+- 🇩🇪 **Germany**: 10.9% → 9.69% (↓ -1.2%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 15.71% to win · 42.29% to reach final · 69.55% semifinal
-2. 🇪🇸 **Spain** — 15.07% to win · 35.99% to reach final · 47.09% semifinal
-3. 🇫🇷 **France** — 14.69% to win · 42.7% to reach final · 57.18% semifinal
-4. 🇩🇪 **Germany** — 8.92% to win · 28.93% to reach final · 40.25% semifinal
-5. 🇦🇷 **Argentina** — 8.68% to win · 43.94% to reach final · 69.53% semifinal
+1. 🇪🇸 **Spain** — 15.27% to win · 35.93% to reach final · 46.55% semifinal
+2. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 15.24% to win · 42.2% to reach final · 68.66% semifinal
+3. 🇫🇷 **France** — 14.26% to win · 41.78% to reach final · 56.6% semifinal
+4. 🇩🇪 **Germany** — 9.69% to win · 30.33% to reach final · 41.0% semifinal
+5. 🇦🇷 **Argentina** — 8.81% to win · 44.22% to reach final · 70.57% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
@@ -35,11 +35,11 @@
 - **Upsets called wrong:** 31
 
 ### 😱 Biggest Upsets (model got wrong)
-- 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.8% chance
+- 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.7% chance
 - 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.0% chance
-- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–0 Ghana 🇬🇭 · Model only gave this outcome 3.7% chance
-- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.7% chance
-- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.7% chance
+- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–0 Ghana 🇬🇭 · Model only gave this outcome 3.6% chance
+- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.4% chance
+- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.8% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
 *form_nudge = score adjustment based on actual vs predicted goals*
@@ -66,9 +66,9 @@
 4. 🇧🇷 **Vinícius Júnior** — 4 goals, 1 assist
 5. 🇩🇪 **K. Havertz** — 4 goals, 0 assists
 6. 🇩🇪 **D. Undav** — 3 goals, 2 assists
-7. 🇲🇽 **J. Quiñones** — 3 goals, 1 assist
-8. 🇨🇭 **J. Manzambi** — 3 goals, 1 assist
-9. 🇫🇷 **O. Dembélé** — 3 goals, 1 assist
+7. 🇫🇷 **O. Dembélé** — 3 goals, 2 assists
+8. 🇲🇽 **J. Quiñones** — 3 goals, 1 assist
+9. 🇨🇭 **J. Manzambi** — 3 goals, 1 assist
 10. 🇳🇱 **C. Gakpo** — 3 goals, 1 assist
 
 ## 📊 Group Stage Snapshot
@@ -154,9 +154,9 @@
 🇦🇷 Argentina are the biggest movers in our World Cup model.
 
 Pre-tournament win probability: 4.4%
-After 79 matches: 8.68%
+After 79 matches: 8.81%
 
-That's a +4.3% swing based on real match data.
+That's a +4.4% swing based on real match data.
 
 Our model updates after every game using Poisson simulation
 & Bayesian score adjustment. 10,000 simulations per update.
@@ -170,7 +170,7 @@ Our model updates after every game using Poisson simulation
 Our model predicted the correct outcome in 48/79 (60.8%).
 
 Biggest miss: 🇪🇨 Ecuador 2–1 Germany 🇩🇪
-We only gave that result a 1.8% chance.
+We only gave that result a 1.7% chance.
 
 That's football. The model learns and adapts after every game.
 
