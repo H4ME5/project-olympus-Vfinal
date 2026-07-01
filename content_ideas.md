@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: July 01, 2026 04:58 UTC · Phase: Round Of 32 · 79 matches played*
+*Auto-generated: July 01, 2026 05:00 UTC · Phase: Round Of 32 · 79 matches played*
 
 ---
 
@@ -7,27 +7,27 @@
 *Compare live model vs pre-tournament prediction*
 
 ### 🚀 Biggest Risers
-- 🇦🇷 **Argentina**: 4.4% → 9.03% (↑ +4.6%)
-- 🇧🇷 **Brazil**: 5.2% → 9.04% (↑ +3.8%)
-- 🇫🇷 **France**: 11.8% → 14.63% (↑ +2.8%)
-- 🇳🇴 **Norway**: 2.1% → 4.3% (↑ +2.2%)
-- 🇨🇭 **Switzerland**: 3.1% → 4.87% (↑ +1.8%)
+- 🇦🇷 **Argentina**: 4.4% → 9.08% (↑ +4.7%)
+- 🇧🇷 **Brazil**: 5.2% → 8.46% (↑ +3.3%)
+- 🇫🇷 **France**: 11.8% → 14.89% (↑ +3.1%)
+- 🇳🇴 **Norway**: 2.1% → 4.07% (↑ +2.0%)
+- 🇨🇭 **Switzerland**: 3.1% → 4.77% (↑ +1.7%)
 
 ### 📉 Biggest Fallers
-- 🇵🇹 **Portugal**: 14.9% → 7.2% (↓ -7.7%)
-- 🇪🇸 **Spain**: 19.0% → 14.53% (↓ -4.5%)
-- 🇭🇷 **Croatia**: 3.0% → 1.16% (↓ -1.8%)
+- 🇵🇹 **Portugal**: 14.9% → 7.59% (↓ -7.3%)
+- 🇪🇸 **Spain**: 19.0% → 14.44% (↓ -4.6%)
+- 🇭🇷 **Croatia**: 3.0% → 1.14% (↓ -1.9%)
 - 🇯🇵 **Japan**: 1.8% → 0.0% (↓ -1.8%)
-- 🇩🇪 **Germany**: 10.9% → 9.53% (↓ -1.4%)
+- 🇩🇪 **Germany**: 10.9% → 9.47% (↓ -1.4%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 15.27% to win · 42.79% to reach final · 69.04% semifinal
-2. 🇫🇷 **France** — 14.63% to win · 41.68% to reach final · 56.46% semifinal
-3. 🇪🇸 **Spain** — 14.53% to win · 35.54% to reach final · 46.49% semifinal
-4. 🇩🇪 **Germany** — 9.53% to win · 29.74% to reach final · 40.94% semifinal
-5. 🇧🇷 **Brazil** — 9.04% to win · 30.21% to reach final · 57.77% semifinal
+1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 15.45% to win · 41.35% to reach final · 67.8% semifinal
+2. 🇫🇷 **France** — 14.89% to win · 42.95% to reach final · 57.63% semifinal
+3. 🇪🇸 **Spain** — 14.44% to win · 35.6% to reach final · 46.45% semifinal
+4. 🇩🇪 **Germany** — 9.47% to win · 29.17% to reach final · 40.1% semifinal
+5. 🇦🇷 **Argentina** — 9.08% to win · 44.45% to reach final · 69.19% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
@@ -35,11 +35,11 @@
 - **Upsets called wrong:** 31
 
 ### 😱 Biggest Upsets (model got wrong)
-- 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.7% chance
+- 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.9% chance
 - 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.1% chance
 - 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–0 Ghana 🇬🇭 · Model only gave this outcome 3.8% chance
-- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.5% chance
-- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.7% chance
+- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.4% chance
+- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.8% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
 *form_nudge = score adjustment based on actual vs predicted goals*
@@ -66,10 +66,10 @@
 4. 🇧🇷 **Vinícius Júnior** — 4 goals, 1 assist
 5. 🇩🇪 **K. Havertz** — 4 goals, 0 assists
 6. 🇩🇪 **D. Undav** — 3 goals, 2 assists
-7. 🇨🇭 **J. Manzambi** — 3 goals, 1 assist
-8. 🇫🇷 **O. Dembélé** — 3 goals, 1 assist
-9. 🇳🇱 **C. Gakpo** — 3 goals, 1 assist
-10. 🇸🇳 **I. Sarr** — 3 goals, 1 assist
+7. 🇲🇽 **J. Quiñones** — 3 goals, 1 assist
+8. 🇨🇭 **J. Manzambi** — 3 goals, 1 assist
+9. 🇫🇷 **O. Dembélé** — 3 goals, 1 assist
+10. 🇳🇱 **C. Gakpo** — 3 goals, 1 assist
 
 ## 📊 Group Stage Snapshot
 
@@ -154,9 +154,9 @@
 🇦🇷 Argentina are the biggest movers in our World Cup model.
 
 Pre-tournament win probability: 4.4%
-After 79 matches: 9.03%
+After 79 matches: 9.08%
 
-That's a +4.6% swing based on real match data.
+That's a +4.7% swing based on real match data.
 
 Our model updates after every game using Poisson simulation
 & Bayesian score adjustment. 10,000 simulations per update.
@@ -170,7 +170,7 @@ Our model updates after every game using Poisson simulation
 Our model predicted the correct outcome in 48/79 (60.8%).
 
 Biggest miss: 🇪🇨 Ecuador 2–1 Germany 🇩🇪
-We only gave that result a 1.7% chance.
+We only gave that result a 1.9% chance.
 
 That's football. The model learns and adapts after every game.
 
