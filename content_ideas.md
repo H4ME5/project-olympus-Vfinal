@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: July 06, 2026 11:34 UTC · Phase: Round Of 32 · 92 matches played*
+*Auto-generated: July 06, 2026 11:36 UTC · Phase: Round Of 32 · 92 matches played*
 
 ---
 
@@ -7,27 +7,27 @@
 *Compare live model vs pre-tournament prediction*
 
 ### 🚀 Biggest Risers
-- 🇦🇷 **Argentina**: 4.4% → 8.03% (↑ +3.6%)
-- 🇨🇭 **Switzerland**: 3.1% → 6.54% (↑ +3.4%)
-- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 17.59% (↑ +3.2%)
-- 🇫🇷 **France**: 11.8% → 13.73% (↑ +1.9%)
-- 🇧🇷 **Brazil**: 5.2% → 6.83% (↑ +1.6%)
+- 🇦🇷 **Argentina**: 4.4% → 8.28% (↑ +3.9%)
+- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 17.81% (↑ +3.4%)
+- 🇨🇭 **Switzerland**: 3.1% → 5.85% (↑ +2.8%)
+- 🇧🇷 **Brazil**: 5.2% → 7.32% (↑ +2.1%)
+- 🇫🇷 **France**: 11.8% → 13.33% (↑ +1.5%)
 
 ### 📉 Biggest Fallers
-- 🇵🇹 **Portugal**: 14.9% → 9.09% (↓ -5.8%)
+- 🇵🇹 **Portugal**: 14.9% → 9.21% (↓ -5.7%)
 - 🇭🇷 **Croatia**: 3.0% → 0.0% (↓ -3.0%)
-- 🇩🇪 **Germany**: 10.9% → 8.39% (↓ -2.5%)
+- 🇩🇪 **Germany**: 10.9% → 8.58% (↓ -2.3%)
+- 🇪🇸 **Spain**: 19.0% → 17.0% (↓ -2.0%)
 - 🇯🇵 **Japan**: 1.8% → 0.0% (↓ -1.8%)
-- 🇪🇸 **Spain**: 19.0% → 17.57% (↓ -1.4%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 17.59% to win · 49.32% to reach final · 80.61% semifinal
-2. 🇪🇸 **Spain** — 17.57% to win · 43.23% to reach final · 58.02% semifinal
-3. 🇫🇷 **France** — 13.73% to win · 42.63% to reach final · 57.63% semifinal
-4. 🇵🇹 **Portugal** — 9.09% to win · 29.02% to reach final · 41.98% semifinal
-5. 🇩🇪 **Germany** — 8.39% to win · 29.25% to reach final · 39.92% semifinal
+1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 17.81% to win · 50.08% to reach final · 80.56% semifinal
+2. 🇪🇸 **Spain** — 17.0% to win · 42.51% to reach final · 57.46% semifinal
+3. 🇫🇷 **France** — 13.33% to win · 42.09% to reach final · 57.55% semifinal
+4. 🇵🇹 **Portugal** — 9.21% to win · 29.33% to reach final · 42.54% semifinal
+5. 🇩🇪 **Germany** — 8.58% to win · 28.69% to reach final · 40.0% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
@@ -36,10 +36,10 @@
 
 ### 😱 Biggest Upsets (model got wrong)
 - 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.8% chance
-- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.1% chance
+- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.0% chance
 - 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–0 Ghana 🇬🇭 · Model only gave this outcome 3.8% chance
-- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.6% chance
-- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.8% chance
+- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.3% chance
+- 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 12.9% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
 *form_nudge = score adjustment based on actual vs predicted goals*
@@ -63,13 +63,13 @@
 1. 🇦🇷 **L. Messi** — 8 goals, 0 assists
 2. 🇳🇴 **E. Haaland** — 7 goals, 0 assists
 3. 🇫🇷 **Kylian Mbappé** — 6 goals, 2 assists
-4. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **H. Kane** — 6 goals, 0 assists
+4. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **H. Kane** — 6 goals, 1 assist
 5. 🇲🇽 **J. Quiñones** — 4 goals, 1 assist
 6. 🇧🇷 **Vinícius Júnior** — 4 goals, 1 assist
-7. 🇪🇸 **Mikel Oyarzabal** — 4 goals, 1 assist
-8. 🇸🇳 **I. Sarr** — 4 goals, 1 assist
-9. 🇩🇪 **K. Havertz** — 4 goals, 0 assists
-10. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **J. Bellingham** — 4 goals, 0 assists
+7. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **J. Bellingham** — 4 goals, 1 assist
+8. 🇪🇸 **Mikel Oyarzabal** — 4 goals, 1 assist
+9. 🇸🇳 **I. Sarr** — 4 goals, 1 assist
+10. 🇩🇪 **K. Havertz** — 4 goals, 0 assists
 
 ## 📊 Group Stage Snapshot
 
@@ -154,9 +154,9 @@
 🇦🇷 Argentina are the biggest movers in our World Cup model.
 
 Pre-tournament win probability: 4.4%
-After 92 matches: 8.03%
+After 92 matches: 8.28%
 
-That's a +3.6% swing based on real match data.
+That's a +3.9% swing based on real match data.
 
 Our model updates after every game using Poisson simulation
 & Bayesian score adjustment. 10,000 simulations per update.
@@ -184,7 +184,7 @@ That's football. The model learns and adapts after every game.
 1. 🇦🇷 L. Messi — 8G 0A
 2. 🇳🇴 E. Haaland — 7G 0A
 3. 🇫🇷 Kylian Mbappé — 6G 2A
-4. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 H. Kane — 6G 0A
+4. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 H. Kane — 6G 1A
 5. 🇲🇽 J. Quiñones — 4G 1A
 
 #WC2026 #WorldCup2026 #GoldenBoot #Football #ProjectOlympus
