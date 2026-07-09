@@ -1,5 +1,5 @@
 # 🏆 Project Olympus — Content Ideas
-*Auto-generated: July 09, 2026 21:28 UTC · Phase: Quarter Finals · 96 matches played*
+*Auto-generated: July 09, 2026 21:30 UTC · Phase: Quarter Finals · 96 matches played*
 
 ---
 
@@ -7,27 +7,27 @@
 *Compare live model vs pre-tournament prediction*
 
 ### 🚀 Biggest Risers
-- 🇦🇷 **Argentina**: 4.4% → 8.17% (↑ +3.8%)
-- 🇨🇭 **Switzerland**: 3.1% → 6.2% (↑ +3.1%)
-- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 17.28% (↑ +2.9%)
-- 🇧🇷 **Brazil**: 5.2% → 7.24% (↑ +2.0%)
-- 🇫🇷 **France**: 11.8% → 13.49% (↑ +1.7%)
+- 🇦🇷 **Argentina**: 4.4% → 8.41% (↑ +4.0%)
+- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England**: 14.4% → 17.49% (↑ +3.1%)
+- 🇫🇷 **France**: 11.8% → 14.36% (↑ +2.6%)
+- 🇨🇭 **Switzerland**: 3.1% → 5.44% (↑ +2.3%)
+- 🇧🇷 **Brazil**: 5.2% → 7.31% (↑ +2.1%)
 
 ### 📉 Biggest Fallers
-- 🇵🇹 **Portugal**: 14.9% → 9.45% (↓ -5.5%)
+- 🇵🇹 **Portugal**: 14.9% → 8.6% (↓ -6.3%)
 - 🇭🇷 **Croatia**: 3.0% → 0.0% (↓ -3.0%)
-- 🇩🇪 **Germany**: 10.9% → 8.51% (↓ -2.4%)
-- 🇪🇸 **Spain**: 19.0% → 17.07% (↓ -1.9%)
+- 🇩🇪 **Germany**: 10.9% → 8.63% (↓ -2.3%)
 - 🇯🇵 **Japan**: 1.8% → 0.0% (↓ -1.8%)
+- 🇪🇸 **Spain**: 19.0% → 17.46% (↓ -1.5%)
 
 ## 🥇 Current Top 5 to Win the World Cup
 *Live model after real match results*
 
-1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 17.28% to win · 49.12% to reach final · 80.69% semifinal
-2. 🇪🇸 **Spain** — 17.07% to win · 42.53% to reach final · 56.92% semifinal
-3. 🇫🇷 **France** — 13.49% to win · 43.4% to reach final · 58.22% semifinal
-4. 🇵🇹 **Portugal** — 9.45% to win · 29.72% to reach final · 43.08% semifinal
-5. 🇩🇪 **Germany** — 8.51% to win · 28.57% to reach final · 39.1% semifinal
+1. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **England** — 17.49% to win · 49.69% to reach final · 80.74% semifinal
+2. 🇪🇸 **Spain** — 17.46% to win · 43.5% to reach final · 58.07% semifinal
+3. 🇫🇷 **France** — 14.36% to win · 43.25% to reach final · 57.77% semifinal
+4. 🇩🇪 **Germany** — 8.63% to win · 28.38% to reach final · 39.62% semifinal
+5. 🇵🇹 **Portugal** — 8.6% to win · 27.94% to reach final · 41.93% semifinal
 
 ## 🎯 Model Prediction Accuracy
 
@@ -35,10 +35,10 @@
 - **Upsets called wrong:** 35
 
 ### 😱 Biggest Upsets (model got wrong)
-- 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.8% chance
-- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.1% chance
-- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–0 Ghana 🇬🇭 · Model only gave this outcome 3.9% chance
-- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.5% chance
+- 🇪🇨 Ecuador 2–1 Germany 🇩🇪 · Model only gave this outcome 1.7% chance
+- 🇪🇸 Spain 0–0 Cape Verde 🇨🇻 · Model only gave this outcome 2.0% chance
+- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–0 Ghana 🇬🇭 · Model only gave this outcome 3.6% chance
+- 🇿🇦 South Africa 1–0 South Korea 🇰🇷 · Model only gave this outcome 11.3% chance
 - 🇵🇹 Portugal 1–1 DR Congo 🇨🇩 · Model only gave this outcome 13.0% chance
 
 ## 💥 Over & Underperformers vs Model Expectations
@@ -64,12 +64,12 @@
 2. 🇫🇷 **Kylian Mbappé** — 8 goals, 2 assists
 3. 🇳🇴 **E. Haaland** — 7 goals, 0 assists
 4. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **H. Kane** — 6 goals, 1 assist
-5. 🇲🇽 **J. Quiñones** — 4 goals, 1 assist
-6. 🇧🇷 **Vinícius Júnior** — 4 goals, 1 assist
-7. 🇪🇸 **Mikel Oyarzabal** — 4 goals, 1 assist
-8. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **J. Bellingham** — 4 goals, 1 assist
-9. 🇸🇳 **I. Sarr** — 4 goals, 1 assist
-10. 🇩🇪 **K. Havertz** — 4 goals, 0 assists
+5. 🇫🇷 **O. Dembélé** — 4 goals, 2 assists
+6. 🇲🇽 **J. Quiñones** — 4 goals, 1 assist
+7. 🇧🇷 **Vinícius Júnior** — 4 goals, 1 assist
+8. 🇪🇸 **Mikel Oyarzabal** — 4 goals, 1 assist
+9. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **J. Bellingham** — 4 goals, 1 assist
+10. 🇸🇳 **I. Sarr** — 4 goals, 1 assist
 
 ## 📊 Group Stage Snapshot
 
@@ -154,9 +154,9 @@
 🇦🇷 Argentina are the biggest movers in our World Cup model.
 
 Pre-tournament win probability: 4.4%
-After 96 matches: 8.17%
+After 96 matches: 8.41%
 
-That's a +3.8% swing based on real match data.
+That's a +4.0% swing based on real match data.
 
 Our model updates after every game using Poisson simulation
 & Bayesian score adjustment. 10,000 simulations per update.
@@ -170,7 +170,7 @@ Our model updates after every game using Poisson simulation
 Our model predicted the correct outcome in 61/96 (63.5%).
 
 Biggest miss: 🇪🇨 Ecuador 2–1 Germany 🇩🇪
-We only gave that result a 1.8% chance.
+We only gave that result a 1.7% chance.
 
 That's football. The model learns and adapts after every game.
 
@@ -185,7 +185,7 @@ That's football. The model learns and adapts after every game.
 2. 🇫🇷 Kylian Mbappé — 8G 2A
 3. 🇳🇴 E. Haaland — 7G 0A
 4. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 H. Kane — 6G 1A
-5. 🇲🇽 J. Quiñones — 4G 1A
+5. 🇫🇷 O. Dembélé — 4G 2A
 
 #WC2026 #WorldCup2026 #GoldenBoot #Football #ProjectOlympus
 ```
